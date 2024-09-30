@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "4063681274",
+    "firebase_url": "https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "iumopedsafe",
+    "storage_bucket": "iumopedsafe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:4063681274:android:ae906481d833087e1d8743",
+        "android_client_info": {
+          "package_name": "iu.mopedsafe.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYwR0wbJ8B83zic7rDYBsO2eLSNnfPMIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
