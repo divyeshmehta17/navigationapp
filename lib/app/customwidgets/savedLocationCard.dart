@@ -7,34 +7,37 @@ import 'package:mopedsafe/app/services/colors.dart';
 import 'package:mopedsafe/app/services/responsive_size.dart';
 import 'package:mopedsafe/app/services/text_style_util.dart';
 
-import '../components/SavedLocationData.dart';
-
-Widget savedLocationCard(SavedLocationData locationdata, BuildContext context) {
+Widget savedLocationCard(
+    {String? svgPath, String? name, String? distance, BuildContext? context}) {
   return Container(
-    width: 70.kw,
-    height: 90.kh,
+    width: 92.kw,
+    height: 36.kh,
     margin: EdgeInsets.symmetric(horizontal: 8.kw),
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14.kw),
         color: Colors.grey.shade200),
     child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        if (locationdata.icon != null)
-          Expanded(
+        if (svgPath != null)
+          Center(
             child: CommonImageView(
-              svgPath: locationdata.icon,
-            ).paddingOnly(bottom: 8.kh, top: 6.kh),
+              svgPath: svgPath,
+              width: 24.kw,
+              height: 26.kh,
+            ),
           ),
-        Text(
-          locationdata.name,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyleUtil.poppins400(
-            fontSize: 12.kh,
-          ),
-        ),
-        if (locationdata.distance != null)
+        if (name != null)
           Text(
-            locationdata.distance!,
+            name,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyleUtil.poppins400(
+              fontSize: 12.kh,
+            ),
+          ),
+        if (distance != null)
+          Text(
+            distance,
             overflow: TextOverflow.ellipsis,
             style: TextStyleUtil.poppins500(
               fontSize: 12.kh,

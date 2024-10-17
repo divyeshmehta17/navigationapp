@@ -40,6 +40,8 @@ import '../modules/resetpassword/bindings/resetpassword_binding.dart';
 import '../modules/resetpassword/views/resetpassword_view.dart';
 import '../modules/saved/bindings/saved_binding.dart';
 import '../modules/saved/views/saved_view.dart';
+import '../modules/savednavgation/bindings/savednavgation_binding.dart';
+import '../modules/savednavgation/views/savednavgation_view.dart';
 import '../modules/searchview/bindings/searchview_binding.dart';
 import '../modules/searchview/views/searchview_view.dart';
 import '../modules/setprofiledetails/bindings/setprofiledetails_binding.dart';
@@ -111,7 +113,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.SEARCHVIEW,
-      page: () => const SearchviewView(),
+      page: () => SearchviewView(),
       binding: SearchviewBinding(),
     ),
     GetPage(
@@ -183,6 +185,11 @@ class AppPages {
       name: _Paths.REALTIMENAVIGATION,
       page: () => RealtimenavigationView(),
       binding: RealtimenavigationBinding(),
+    ),
+    GetPage(
+      name: _Paths.SAVEDNAVGATION,
+      page: () => SavednavgationView(),
+      binding: SavednavgationBinding(),
     ),
   ];
 }

@@ -154,12 +154,7 @@ class SubscribescreenView extends GetView<SubscribescreenController> {
                     ? NavigationAppButton(
                         label: 'Try Free For 7 Days',
                         onTap: () async {
-                          if (controller.productList.isNotEmpty) {
-                            controller
-                                .buySubscription(controller.productList[0]);
-                          } else {
-                            print('No products available');
-                          }
+                          controller.buySubscription('weekly');
                         },
                         color: context.brandColor1,
                         borderRadius: BorderRadius.circular(48.kw),
@@ -185,7 +180,7 @@ class SubscribescreenView extends GetView<SubscribescreenController> {
                             actions: [
                               Row(
                                 children: [
-                                  NavigationAppButton(label: 'Stay'),
+                                  const NavigationAppButton(label: 'Stay'),
                                   NavigationAppButton(
                                     label: 'Cancel',
                                     color: Colors.red,
@@ -201,6 +196,8 @@ class SubscribescreenView extends GetView<SubscribescreenController> {
                                       Get.find<ProfileController>()
                                           .isSubscribed
                                           .value = false;
+                                      Get.back();
+                                      controller.cancelSubscription();
                                     },
                                   ),
                                 ],

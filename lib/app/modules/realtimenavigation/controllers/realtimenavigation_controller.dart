@@ -152,9 +152,9 @@ class RealtimenavigationController extends GetxController {
 
     CameraPosition newCameraPosition = CameraPosition(
       target: newPosition,
-      zoom: 17.0, // Adjust based on your needs
-      tilt: 45.0, // Optional: tilt for better perspective
-      bearing: currentHeading.value, // Rotate based on the heading
+      zoom: 20.0, // Adjust based on your needs
+      tilt: 90.0, // Optional: tilt for better perspective
+      bearing: currentHeading.value - 240, // Rotate based on the heading
     );
 
     // Use animateCamera for smoother movement

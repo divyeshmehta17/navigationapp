@@ -19,4 +19,6 @@ class Endpoints {
   static const String getRoutes = "navigation/direction/route";
   static const String saveRoutes = "route/save";
   static const String getsavedRoutes = "route/get/all";
+  static const String getsavedPlace = "route/place/get/all";
+  static const String postsavePlace = "route/place/save";
 }

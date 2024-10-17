@@ -4,7 +4,7 @@
 class GetSavedRoutesDataResults {
 /*
 {
-  "_id": "66faa6305e4179ee36f0719a",
+  "_id": "6707b5a257a19942bf115c7c",
   "user": "66742a231bda099a9e8498de",
   "points": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M[Ik@K_@AgAKSESMKOGOEw@lDYnAFbBNn@JbBZzBj@rCbAzC`AbCp@xBp@lAZFwC~BWlDo@QqBGwBHsBDo@FqCBkCCyBDSYqArUBN@f@Nl@CbCWb@KdEoAfAYpA[tEeA`HeB|EiAvAa@`GwAnCq@~Cs@~C{@bFiA~@WpBm@jEgAxBe@lAUbBUxAMnH@bAHrAN|@RdAVn@TjBv@hAj@vA|@dAv@pF`FnMjMn@XZHhDbDfA~@p@f@p@^p@X^JX[h@cALa@NHc@|@i@bAe@pAYp@Od@IZCn@D|B@pAKzDM|BIx@GVi@vCSGZmBPuATeDFgB@s@AgBq@Ag@DyB]I@EDAjAEJUTc@ZMHEF]hB",
   "instructions": [
@@ -12,12 +12,13 @@ class GetSavedRoutesDataResults {
   ],
   "time": 120,
   "distance": 5,
+  "placeId": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M",
   "type": "SAVED",
   "startName": "test",
   "endName": "test1",
-  "createdAt": "2024-09-30T13:22:56.504Z",
-  "updatedAt": "2024-09-30T13:22:56.504Z",
-  "v": 0
+  "createdAt": "2024-10-10T11:08:18.697Z",
+  "updatedAt": "2024-10-10T11:08:18.697Z",
+  "__v": 0
 }
 */
 
@@ -27,12 +28,13 @@ class GetSavedRoutesDataResults {
   List<String?>? instructions;
   int? time;
   int? distance;
+  String? placeId;
   String? type;
   String? startName;
   String? endName;
   String? createdAt;
   String? updatedAt;
-  int? v;
+  int? V;
 
   GetSavedRoutesDataResults({
     this.Id,
@@ -41,12 +43,13 @@ class GetSavedRoutesDataResults {
     this.instructions,
     this.time,
     this.distance,
+    this.placeId,
     this.type,
     this.startName,
     this.endName,
     this.createdAt,
     this.updatedAt,
-    this.v,
+    this.V,
   });
   GetSavedRoutesDataResults.fromJson(Map<String, dynamic> json) {
     Id = json['_id']?.toString();
@@ -62,12 +65,13 @@ class GetSavedRoutesDataResults {
     }
     time = json['time']?.toInt();
     distance = json['distance']?.toInt();
+    placeId = json['placeId']?.toString();
     type = json['type']?.toString();
     startName = json['startName']?.toString();
     endName = json['endName']?.toString();
     createdAt = json['createdAt']?.toString();
     updatedAt = json['updatedAt']?.toString();
-    v = json['v']?.toInt();
+    V = json['__v']?.toInt();
   }
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
@@ -84,12 +88,13 @@ class GetSavedRoutesDataResults {
     }
     data['time'] = time;
     data['distance'] = distance;
+    data['placeId'] = placeId;
     data['type'] = type;
     data['startName'] = startName;
     data['endName'] = endName;
     data['createdAt'] = createdAt;
     data['updatedAt'] = updatedAt;
-    data['v'] = v;
+    data['__v'] = V;
     return data;
   }
 }
@@ -101,7 +106,7 @@ class GetSavedRoutesData {
   "limit": 10,
   "results": [
     {
-      "_id": "66faa6305e4179ee36f0719a",
+      "_id": "6707b5a257a19942bf115c7c",
       "user": "66742a231bda099a9e8498de",
       "points": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M[Ik@K_@AgAKSESMKOGOEw@lDYnAFbBNn@JbBZzBj@rCbAzC`AbCp@xBp@lAZFwC~BWlDo@QqBGwBHsBDo@FqCBkCCyBDSYqArUBN@f@Nl@CbCWb@KdEoAfAYpA[tEeA`HeB|EiAvAa@`GwAnCq@~Cs@~C{@bFiA~@WpBm@jEgAxBe@lAUbBUxAMnH@bAHrAN|@RdAVn@TjBv@hAj@vA|@dAv@pF`FnMjMn@XZHhDbDfA~@p@f@p@^p@X^JX[h@cALa@NHc@|@i@bAe@pAYp@Od@IZCn@D|B@pAKzDM|BIx@GVi@vCSGZmBPuATeDFgB@s@AgBq@Ag@DyB]I@EDAjAEJUTc@ZMHEF]hB",
       "instructions": [
@@ -109,16 +114,17 @@ class GetSavedRoutesData {
       ],
       "time": 120,
       "distance": 5,
+      "placeId": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M",
       "type": "SAVED",
       "startName": "test",
       "endName": "test1",
-      "createdAt": "2024-09-30T13:22:56.504Z",
-      "updatedAt": "2024-09-30T13:22:56.504Z",
-      "v": 0
+      "createdAt": "2024-10-10T11:08:18.697Z",
+      "updatedAt": "2024-10-10T11:08:18.697Z",
+      "__v": 0
     }
   ],
   "totalPages": 1,
-  "totalResults": 1
+  "totalResults": 2
 }
 */
 
@@ -175,7 +181,7 @@ class GetSavedRoutes {
     "limit": 10,
     "results": [
       {
-        "_id": "66faa6305e4179ee36f0719a",
+        "_id": "6707b5a257a19942bf115c7c",
         "user": "66742a231bda099a9e8498de",
         "points": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M[Ik@K_@AgAKSESMKOGOEw@lDYnAFbBNn@JbBZzBj@rCbAzC`AbCp@xBp@lAZFwC~BWlDo@QqBGwBHsBDo@FqCBkCCyBDSYqArUBN@f@Nl@CbCWb@KdEoAfAYpA[tEeA`HeB|EiAvAa@`GwAnCq@~Cs@~C{@bFiA~@WpBm@jEgAxBe@lAUbBUxAMnH@bAHrAN|@RdAVn@TjBv@hAj@vA|@dAv@pF`FnMjMn@XZHhDbDfA~@p@f@p@^p@X^JX[h@cALa@NHc@|@i@bAe@pAYp@Od@IZCn@D|B@pAKzDM|BIx@GVi@vCSGZmBPuATeDFgB@s@AgBq@Ag@DyB]I@EDAjAEJUTc@ZMHEF]hB",
         "instructions": [
@@ -183,16 +189,17 @@ class GetSavedRoutes {
         ],
         "time": 120,
         "distance": 5,
+        "placeId": "smmtBsfu{L_BKmDIOfI~BZhBXvE|@hBFXDx@Xl@FGxBYvAIl@?^CV?h@Bf@\\CrAGzCMvDWrF[JOL_@Ac@HyARuAl@sCLq@BY@eAIwAU_AOk@U[UC]M",
         "type": "SAVED",
         "startName": "test",
         "endName": "test1",
-        "createdAt": "2024-09-30T13:22:56.504Z",
-        "updatedAt": "2024-09-30T13:22:56.504Z",
-        "v": 0
+        "createdAt": "2024-10-10T11:08:18.697Z",
+        "updatedAt": "2024-10-10T11:08:18.697Z",
+        "__v": 0
       }
     ],
     "totalPages": 1,
-    "totalResults": 1
+    "totalResults": 2
   }
 }
 */

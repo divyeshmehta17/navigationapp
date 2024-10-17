@@ -35,6 +35,7 @@ class APIManager {
       required int time,
       required List<GetRoutesDataInstructions> instructions,
       required double distance,
+      String? placeID,
       required String type}) async {
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: true)
@@ -43,7 +44,8 @@ class APIManager {
       "instructions": instructions,
       "time": time,
       "distance": distance,
-      "type": type
+      "type": type,
+      "placeId": placeID
       // OFFLINE or SAVED
     });
   }
@@ -148,6 +150,27 @@ class APIManager {
     );
   }
 
+  static Future<Response> postSaveLocation(
+      {bool showSnakbar = true,
+      required String type,
+      required String locationtype,
+      required String addressLine,
+      required double lat,
+      required double lng,
+      required String title}) async {
+    Map<String, dynamic> body = {
+      "type": type,
+      "title": title,
+      "location": {
+        "type": locationtype,
+        "coordinates": [lat, lng], // Longitude, Latitude
+        "addressLine": addressLine
+      }
+    };
+    return await DioClient(Dio(),
+            showSnakbar: showSnakbar, isOverlayLoader: true)
+        .post(Endpoints.baseUrl + Endpoints.postsavePlace, data: body);
+  }
   //////////getapis
 
   static Future<Response> getFetchCommunityPost(
@@ -201,6 +224,17 @@ class APIManager {
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: true)
         .get(Endpoints.baseUrl + Endpoints.getsavedRoutes,
+            queryParameters: queryParameters);
+  }
+
+  static Future<Response> getSavedLocation({
+    bool showSnakbar = true,
+    required String type,
+  }) async {
+    Map<String, dynamic> queryParameters = {"type": type};
+    return await DioClient(Dio(),
+            showSnakbar: showSnakbar, isOverlayLoader: true)
+        .get(Endpoints.baseUrl + Endpoints.getsavedPlace,
             queryParameters: queryParameters);
   }
 }

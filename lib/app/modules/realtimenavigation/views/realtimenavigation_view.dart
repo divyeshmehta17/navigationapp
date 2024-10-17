@@ -33,7 +33,7 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
                   target: LatLng(
                       controller.globalController.currentLatitude.toDouble(),
                       controller.globalController.currentLongitude
-                          .toDouble()), // Example position
+                          .toDouble()), // Example positio
                   zoom: 17),
             ),
             Container(
@@ -52,6 +52,7 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
                           )
                         ])).paddingAll(16.kw))
                 .paddingOnly(bottom: 250.kh),
+            //39129/-
             Positioned(
               top: 50,
               left: 10,

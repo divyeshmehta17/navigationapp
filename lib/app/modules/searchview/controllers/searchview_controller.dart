@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_webservice/places.dart' as google_maps_places;
 
 import '../../../components/RecentLocationData.dart';
+import '../../../components/SavedLocationData.dart';
 import '../../../customwidgets/globalcontroller.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../routes/app_pages.dart';
@@ -19,7 +20,7 @@ class SearchviewController extends GetxController {
 
   // Add a variable to store place details
   google_maps_places.PlaceDetails? placeDetails;
-
+  Rxn<SavedLocation> savedLocations = Rxn();
   @override
   void onClose() {
     searchcontroller.clear();
@@ -36,7 +37,17 @@ class SearchviewController extends GetxController {
     print(Get.find<GetStorageService>().getEncjwToken);
   }
 
-  // Method to fetch place details and update global variables
+  Future<void> getSavedLocation() async {
+    APIManager.getSavedLocation(type: 'SAVED').then((response) {
+      savedLocations.value = SavedLocation.fromJson(response.data);
+    });
+  }
+
+  @override
+  void onInit() {
+    getSavedLocation();
+  } // Method to fetch place details and update global variables
+
   Future<void> fetchPlaceDetails(String placeId) async {
     final google_maps_places.GoogleMapsPlaces _places =
         google_maps_places.GoogleMapsPlaces(
@@ -62,6 +73,7 @@ class SearchviewController extends GetxController {
                 globalController.destinationLongitude.toString())
         .then((value) {
       getroutes.value = GetRoutes.fromJson(value.data);
+      print(getroutes.value!.data!.points);
       //getDirections();
       // Pass the entire getroutes data to the next page
       Get.toNamed(Routes.DIRECTIONCARD, arguments: {

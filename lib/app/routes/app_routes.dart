@@ -31,6 +31,7 @@ abstract class Routes {
   static const SETPROFILEDETAILS = _Paths.SETPROFILEDETAILS;
   static const ADDAPLACE = _Paths.ADDAPLACE;
   static const REALTIMENAVIGATION = _Paths.REALTIMENAVIGATION;
+  static const SAVEDNAVGATION = _Paths.SAVEDNAVGATION;
 }
 
 abstract class _Paths {
@@ -62,4 +63,5 @@ abstract class _Paths {
   static const SETPROFILEDETAILS = '/setprofiledetails';
   static const ADDAPLACE = '/addaplace';
   static const REALTIMENAVIGATION = '/realtimenavigation';
+  static const SAVEDNAVGATION = '/savednavgation';
 }

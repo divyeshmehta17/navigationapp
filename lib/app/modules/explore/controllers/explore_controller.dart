@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:mopedsafe/app/constants/image_constant.dart';
+import 'package:mopedsafe/app/services/dio/api_service.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../components/RecentLocationData.dart';
@@ -8,7 +8,7 @@ import '../../../customwidgets/globalcontroller.dart';
 
 class ExploreController extends GetxController {
   var searchText = ''.obs;
-  var savedLocations = <SavedLocationData>[].obs;
+  Rxn<SavedLocation> savedLocations = Rxn();
   var recentLocations = <RecentLocationData>[].obs;
   var panelPosition = 0.0.obs;
   var showReportOptions = false.obs;
@@ -19,21 +19,14 @@ class ExploreController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchSavedLocations();
+    getSavedLocation();
     fetchRecentLocations();
   }
 
-  void fetchSavedLocations() {
-    savedLocations.assignAll([
-      SavedLocationData(
-          name: 'Home', icon: ImageConstant.svghomeIcon, distance: '5 km'),
-      SavedLocationData(
-          name: 'Office', icon: ImageConstant.svgofficeIcon, distance: '10 km'),
-      SavedLocationData(
-          name: 'Urban Plaza',
-          icon: ImageConstant.svgsavedIconsblack,
-          distance: '15 km'),
-    ]);
+  Future<void> getSavedLocation() async {
+    APIManager.getSavedLocation(type: 'SAVED').then((response) {
+      savedLocations.value = SavedLocation.fromJson(response.data);
+    });
   }
 
   void fetchRecentLocations() {

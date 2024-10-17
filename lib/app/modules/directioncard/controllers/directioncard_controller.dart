@@ -90,6 +90,7 @@ class DirectioncardController extends GetxController {
       required double distance,
       required String startName,
       required String endName,
+      String? placeId,
       required List<GetRoutesDataInstructions> instructions}) async {
     APIManager.postSaveRoutes(
             points: points,
@@ -97,6 +98,7 @@ class DirectioncardController extends GetxController {
             distance: distance,
             type: type,
             instructions: instructions,
+            placeID: placeId,
             startName: startName,
             endName: endName)
         .then((value) {
@@ -132,8 +134,8 @@ class DirectioncardController extends GetxController {
   }
 
   void decodePolyline() {
-    final points =
-        PolylinePoints().decodePolyline(getroutes.data!.points.toString());
+    final savedpoints = Get.arguments['points'];
+    final points = PolylinePoints().decodePolyline(savedpoints);
     polylineCoordinates.value =
         points.map((point) => LatLng(point.latitude, point.longitude)).toList();
 

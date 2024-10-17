@@ -22,33 +22,34 @@ import '../controllers/directioncard_controller.dart';
 class DirectioncardView extends GetView<DirectioncardController> {
   DirectioncardView({super.key});
 
+  final FocusNode currentLocationFocusNode = FocusNode();
+  final FocusNode destinationLocationFocusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     Get.lazyPut(() => LocationController());
     return Scaffold(
-      body: Obx(
-        () => Stack(
-          children: [
-            GoogleMap(
-              polylines: controller.polylines.toSet(),
-              markers: Set<Marker>.of(controller.markers),
-              compassEnabled: true,
-              trafficEnabled: true,
-              buildingsEnabled: true,
-              myLocationEnabled: false,
-              myLocationButtonEnabled: false,
-              onMapCreated: (GoogleMapController mapController) {},
-              initialCameraPosition:
-                  CameraPosition(target: controller.currentPosition, zoom: 13),
-            ),
-            SlidingUpPanelWidget(
-              panelController: controller.panelController,
-              minHeight: 100.0,
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
-              panelContentBuilder: (context) => _panelContent(context),
-            ),
-          ],
-        ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            polylines: controller.polylines.toSet(),
+            markers: Set<Marker>.of(controller.markers),
+            compassEnabled: true,
+            trafficEnabled: true,
+            buildingsEnabled: true,
+            myLocationEnabled: false,
+            myLocationButtonEnabled: false,
+            onMapCreated: (GoogleMapController mapController) {},
+            initialCameraPosition:
+                CameraPosition(target: controller.currentPosition, zoom: 13),
+          ),
+          SlidingUpPanelWidget(
+            panelController: controller.panelController,
+            minHeight: 100.0,
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+            panelContentBuilder: (context) => _panelContent(context),
+          ),
+        ],
       ),
     );
   }
@@ -149,9 +150,6 @@ class DirectioncardView extends GetView<DirectioncardController> {
       ],
     ).paddingOnly(right: 12.kw);
   }
-
-  final FocusNode currentLocationFocusNode = FocusNode();
-  final FocusNode destinationLocationFocusNode = FocusNode();
 
   Widget _buildLocationFields(BuildContext context) {
     return Row(
@@ -319,14 +317,16 @@ class DirectioncardView extends GetView<DirectioncardController> {
           ),
           child: IconButton(
             onPressed: () {
-              controller.postSaveRoute(
-                  points: controller.getroutes.data!.points.toString(),
-                  type: 'SAVED',
-                  time: controller.getroutes.data!.time,
-                  distance: controller.getroutes.data!.distance,
-                  instructions: controller.getroutes.data!.instructions,
-                  startName: controller.currentPlaceName.value,
-                  endName: controller.placeName.value);
+              print(controller.getroutes.data!.points);
+              // controller.postSaveRoute(
+              //     points: controller.getroutes.data!.points,
+              //     type: 'SAVED',
+              //     placeId: controller.placeID,
+              //     time: controller.getroutes.data!.time,
+              //     distance: controller.getroutes.data!.distance,
+              //     instructions: controller.getroutes.data!.instructions,
+              //     startName: controller.currentPlaceName.value,
+              //     endName: controller.placeName.value);
             },
             icon: Icon(
               Icons.bookmark_border_outlined,

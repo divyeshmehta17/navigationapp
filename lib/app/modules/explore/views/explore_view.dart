@@ -10,6 +10,7 @@ import 'package:mopedsafe/app/services/responsive_size.dart';
 import 'package:mopedsafe/app/services/text_style_util.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../../customwidgets/addplacebutton.dart';
 import '../../../customwidgets/savedLocationCard.dart';
 import '../controllers/explore_controller.dart';
 
@@ -41,57 +42,60 @@ class ExploreView extends GetView<ExploreController> {
             ),
 
             // Sliding Up Panel
-            SlidingUpPanel(
-              controller: controller.panelController,
-              panelBuilder: (sc) => _panelContent(controller, context),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(18.0)),
-              minHeight: 150,
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
-              body: Stack(
-                children: [
-                  Obx(() {
-                    final position = controller.panelPosition.value;
-                    final offset = 400.0 -
-                        (position *
-                            (MediaQuery.of(context).size.height * 0.35));
-                    return Positioned(
-                      top: offset,
-                      right: 15,
-                      child: Column(
-                        children: [
-                          _iconButton(
-                            ImageConstant.svgmapStyleIcon,
-                            controller.panelController,
-                            Colors.white,
-                          ),
-                          const SizedBox(height: 10),
-                          _iconButton(
-                            ImageConstant.svgLocation,
-                            controller.panelController,
-                            Colors.white,
-                            onTap: () {
-                              controller.globalController.goToCurrentLocation(
-                                  controller.globalController.mapController!);
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          _iconButton(
-                            ImageConstant.svgreportIcon,
-                            controller.panelController,
-                            Colors.red,
-                            onTap: controller.toggleReportOptions,
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
-              onPanelSlide: (position) {
-                controller.panelPosition.value = position;
-              },
-            ),
+            controller.savedLocations.value == null
+                ? CircularProgressIndicator()
+                : SlidingUpPanel(
+                    controller: controller.panelController,
+                    panelBuilder: (sc) => _panelContent(controller, context),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(18.0)),
+                    minHeight: 150,
+                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    body: Stack(
+                      children: [
+                        Obx(() {
+                          final position = controller.panelPosition.value;
+                          final offset = 400.0 -
+                              (position *
+                                  (MediaQuery.of(context).size.height * 0.35));
+                          return Positioned(
+                            top: offset,
+                            right: 15,
+                            child: Column(
+                              children: [
+                                _iconButton(
+                                  ImageConstant.svgmapStyleIcon,
+                                  controller.panelController,
+                                  Colors.white,
+                                ),
+                                const SizedBox(height: 10),
+                                _iconButton(
+                                  ImageConstant.svgLocation,
+                                  controller.panelController,
+                                  Colors.white,
+                                  onTap: () {
+                                    controller.globalController
+                                        .goToCurrentLocation(controller
+                                            .globalController.mapController!);
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                _iconButton(
+                                  ImageConstant.svgreportIcon,
+                                  controller.panelController,
+                                  Colors.red,
+                                  onTap: controller.toggleReportOptions,
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                    onPanelSlide: (position) {
+                      controller.panelPosition.value = position;
+                    },
+                  ),
           ],
         ),
       ),
@@ -161,33 +165,43 @@ class ExploreView extends GetView<ExploreController> {
                       onPressed: () async {}, child: const Text('See All')),
                 ],
               ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    ...controller.savedLocations.map((location) {
-                      return savedLocationCard(location, context);
-                    }),
-                    _addButton(context),
-                  ],
+              Expanded(
+                child: ListView.builder(
+                  itemCount:
+                      controller.savedLocations.value!.data!.results!.length +
+                          1, // 9 items + 1 for the "Add" button
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (BuildContext context, int index) {
+                    // Check if this is the last item in the list
+                    if (index ==
+                        controller
+                            .savedLocations.value!.data!.results!.length) {
+                      // Return the "Add" button at the end
+                      return AddButton();
+                    } else {
+                      // Return the saved location cards
+                      return savedLocationCard(
+                          svgPath: ImageConstant.svghomeIcon,
+                          name: controller.savedLocations!.value!.data!
+                              .results![index]!.title);
+                    }
+                  },
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Recent',
-                      style: TextStyleUtil.poppins500(
-                        fontSize: 14.kh,
-                      )),
-                  TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'See All',
-                        style: TextStyleUtil.poppins400(
-                            fontSize: 12.kh, color: context.brandColor1),
-                      )),
-                ],
-              ),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('Recent',
+                    style: TextStyleUtil.poppins500(
+                      fontSize: 14.kh,
+                    )),
+                TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'See All',
+                      style: TextStyleUtil.poppins400(
+                          fontSize: 12.kh, color: context.brandColor1),
+                    )),
+              ]),
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: 2,
@@ -242,24 +256,6 @@ class ExploreView extends GetView<ExploreController> {
         child: CommonImageView(
           svgPath: icon,
         ),
-      ),
-    );
-  }
-
-  Widget _addButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed(Routes.ADDAPLACE);
-      },
-      child: Container(
-        width: 67.kw,
-        height: 85.kh,
-        margin: EdgeInsets.symmetric(horizontal: 10.kw),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14.kw),
-          color: context.brandColor1,
-        ),
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
