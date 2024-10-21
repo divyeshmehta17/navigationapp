@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscribescreenController extends GetxController {
   RxBool isSubscribed = false.obs; // Track subscription status
@@ -9,6 +11,7 @@ class SubscribescreenController extends GetxController {
   StreamSubscription<PurchasedItem?>? _purchaseUpdatedSubscription;
   StreamSubscription<PurchaseResult?>? _purchaseErrorSubscription;
   StreamSubscription<ConnectionResult>? _connectionSubscription;
+  RxInt selectedSubscriptionIndex = 0.obs; // Track selected subscription index
 
   @override
   void onInit() {
@@ -40,14 +43,35 @@ class SubscribescreenController extends GetxController {
     _restorePurchases();
   }
 
+  String getFormattedDividedPrice(IAPItem item, int divisor) {
+    // Extract the numeric part by removing non-numeric characters (like the currency symbol)
+    String priceWithoutSymbol =
+        item.localizedPrice!.replaceAll(RegExp(r'[^\d.]'), '');
+
+    // Convert the extracted price to double
+    double numericPrice = double.tryParse(priceWithoutSymbol) ?? 0.0;
+
+    // Perform the division
+    double dividedPrice = numericPrice / divisor;
+
+    // Reformat the result with the currency symbol from localizedPrice
+    return "${item.localizedPrice!.substring(0, 1)}${dividedPrice.toStringAsFixed(2)}";
+  }
+
+// Usage in your Text widget
+
   Future<void> _getSubscriptionProducts() async {
     try {
       // Fetch subscription products (make sure your products are marked as subscriptions in Google Play)
       List<IAPItem> items = await FlutterInappPurchase.instance
-          .getSubscriptions(['weekly']); // Subscription product IDs
+          .getSubscriptions([
+        'montly_subscription',
+        '6month_subscription'
+      ]); // Subscription product IDs
 
       productList.assignAll(items);
-      print(items);
+      print(items[0]);
+      print(items[1]);
       for (var item in items) {
         print("Product ID: ${item.productId}");
         print("Localized Price: ${item.localizedPrice}");
@@ -104,6 +128,16 @@ class SubscribescreenController extends GetxController {
       // Verify subscription and update UI state
       print('Subscription successful: ${purchasedItem.productId}');
       isSubscribed.value = true;
+      FlutterInappPurchase.instance
+          .acknowledgePurchaseAndroid(purchasedItem.purchaseToken.toString());
+      // Acknowledge successful purchase to the user
+      Get.snackbar(
+        "Subscription Successful",
+        "You have successfully subscribed to ${purchasedItem.productId}. Enjoy the premium features!",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
       // Show all transaction details
       _showTransactionDetails(purchasedItem);
@@ -122,14 +156,20 @@ class SubscribescreenController extends GetxController {
   }
 
   // Method to cancel subscription
-  void cancelSubscription() {
-    // Usually, you redirect to Play Store subscription management
-    // Use an URL scheme to open subscription management
-    // Android intent to open subscription management
-    const url = 'https://play.google.com/store/account/subscriptions';
-    print('Redirecting to subscription management: $url');
-    // Open the URL in the browser or WebView
-    Get.toNamed(url); // Adjust as needed for navigation
+  void cancelSubscription() async {
+    // Properly construct the URL
+    Uri url = Uri.parse('https://play.google.com/store/account/subscriptions');
+
+    // Check if the URL can be launched and launch it
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url,
+          mode: LaunchMode.externalApplication); // Launch in external browser
+      print('Redirecting to subscription management: $url');
+    } else {
+      print('Could not launch $url');
+      // Optionally show a snackbar or dialog to inform the user
+      Get.snackbar("Error", "Could not open subscription management page.");
+    }
   }
 
   @override

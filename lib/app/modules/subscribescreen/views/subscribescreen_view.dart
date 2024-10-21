@@ -89,72 +89,112 @@ class SubscribescreenView extends GetView<SubscribescreenController> {
                       textAlign: TextAlign.center,
                       style: TextStyleUtil.poppins400(fontSize: 12.kh))
                   .paddingOnly(top: 28.kh, bottom: 20.kh),
-              Container(
-                decoration: BoxDecoration(
-                    border: Border.all(color: context.brandColor1),
-                    borderRadius: BorderRadius.circular(8.kw)),
-                child: Row(
+              Obx(() {
+                return Column(
                   children: [
-                    Container(
-                      height: 16.kh,
-                      width: 16.kw,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: context.brandColor1, width: 2.kw)),
-                    ).paddingOnly(right: 16.kw),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("6 months of MopedGPS+",
-                            style: TextStyleUtil.poppins500(
-                              fontSize: 14.kh,
-                            )),
-                        Text("\$300 at \$25 per month of service",
-                            style: TextStyleUtil.poppins400(fontSize: 12.kh))
-                      ],
-                    )
+                    // First subscription option (index 0)
+                    GestureDetector(
+                      onTap: () {
+                        controller.selectedSubscriptionIndex.value = 0;
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.brandColor1),
+                          borderRadius: BorderRadius.circular(8.kw),
+                        ),
+                        child: Row(
+                          children: [
+                            controller.selectedSubscriptionIndex.value == 0
+                                ? Icon(
+                                    Icons.radio_button_checked_outlined,
+                                    color: context.brandColor1,
+                                  ).paddingOnly(right: 16.kw)
+                                : Icon(
+                                    Icons.radio_button_off_rounded,
+                                    color: context.brandColor1,
+                                  ).paddingOnly(right: 16.kw),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    controller.productList[0].productId
+                                        .toString(),
+                                    style: TextStyleUtil.poppins500(
+                                      fontSize: 14.kh,
+                                    )),
+                                Text(
+                                    "${controller.productList[0].localizedPrice} at ${controller.getFormattedDividedPrice(controller.productList[0], 6)} per month of service",
+                                    style: TextStyleUtil.poppins400(
+                                        fontSize: 12.kh))
+                              ],
+                            ),
+                          ],
+                        ).paddingOnly(left: 16.kw, top: 8.kh, bottom: 8.kh),
+                      ),
+                    ),
+                    Text("or",
+                        style: TextStyleUtil.poppins500(
+                          fontSize: 12.kh,
+                        )).paddingAll(8.kw),
+
+                    // Second subscription option (index 1)
+                    GestureDetector(
+                      onTap: () {
+                        controller.selectedSubscriptionIndex.value = 1;
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.brandColor1),
+                          borderRadius: BorderRadius.circular(8.kw),
+                        ),
+                        child: Row(
+                          children: [
+                            controller.selectedSubscriptionIndex.value == 1
+                                ? Icon(
+                                    Icons.radio_button_checked_outlined,
+                                    color: context.brandColor1,
+                                  ).paddingOnly(right: 16.kw)
+                                : Icon(
+                                    Icons.radio_button_off_rounded,
+                                    color: context.brandColor1,
+                                  ).paddingOnly(right: 16.kw),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    controller.productList[1].productId
+                                        .toString(),
+                                    style: TextStyleUtil.poppins500(
+                                      fontSize: 14.kh,
+                                    )),
+                                Text(
+                                    "${controller.productList[1].localizedPrice} per month of service",
+                                    style: TextStyleUtil.poppins400(
+                                        fontSize: 12.kh))
+                              ],
+                            ),
+                          ],
+                        ).paddingOnly(left: 16.kw, top: 8.kh, bottom: 8.kh),
+                      ),
+                    ),
                   ],
-                ).paddingOnly(left: 16.kw, top: 8.kh, bottom: 8.kh),
-              ),
-              Text("or",
-                  style: TextStyleUtil.poppins500(
-                    fontSize: 12.kh,
-                  )).paddingAll(8.kw),
-              Container(
-                decoration: BoxDecoration(
-                    border: Border.all(color: context.brandColor1),
-                    borderRadius: BorderRadius.circular(8.kw)),
-                child: Row(
-                  children: [
-                    Container(
-                      height: 16.kh,
-                      width: 16.kw,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: context.brandColor1, width: 2.kw)),
-                    ).paddingOnly(right: 16.kw),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Monthly subscription of MopedGPS+",
-                            style: TextStyleUtil.poppins500(
-                              fontSize: 14.kh,
-                            )),
-                        Text("\$40 per month of service",
-                            style: TextStyleUtil.poppins400(fontSize: 12.kh))
-                      ],
-                    )
-                  ],
-                ).paddingOnly(left: 16.kw, top: 8.kh, bottom: 8.kh),
-              ),
+                );
+              }),
+
+              // Buy button
               Obx(() {
                 return controller.isSubscribed.value == false
                     ? NavigationAppButton(
                         label: 'Try Free For 7 Days',
                         onTap: () async {
-                          controller.buySubscription('weekly');
+                          // Use the selected subscription index to buy the appropriate subscription
+                          String selectedProductId = controller
+                              .productList[
+                                  controller.selectedSubscriptionIndex.value]
+                              .productId
+                              .toString();
+                          print(selectedProductId);
+                          controller.buySubscription(selectedProductId);
                         },
                         color: context.brandColor1,
                         borderRadius: BorderRadius.circular(48.kw),
