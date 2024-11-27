@@ -71,7 +71,7 @@ class PhoneloginView extends GetView<PhoneloginController> {
               onChanged: (number) {
                 controller.phoneNumber.value = number.completeNumber;
                 number.completeNumber.isNotEmpty &&
-                        number.completeNumber != '${number.countryCode}'
+                        number.completeNumber != number.countryCode
                     ? controller.isEnabled.value = true
                     : controller.isEnabled.value = false;
               },
@@ -80,13 +80,15 @@ class PhoneloginView extends GetView<PhoneloginController> {
               () => NavigationAppButton(
                 label: 'Continue',
                 onTap: () {
-                  // controller.isEnabled.value == true
-                  //     ?
-                  Get.find<Auth>().mobileLoginOtp(
-                      phoneno: controller.phoneNumber.value,
-                      showLoading: true,
-                      arguments: {'phoneNumber': controller.phoneNumber.value});
-                  //     : null;
+                  controller.isEnabled.value == true
+                      ? Get.find<Auth>().mobileLoginOtp(
+                          context: context,
+                          phoneno: controller.phoneNumber.value,
+                          showLoading: true,
+                          arguments: {
+                              'phoneNumber': controller.phoneNumber.value
+                            })
+                      : null;
                 },
                 color: controller.isEnabled.value == false
                     ? context.lightGrey

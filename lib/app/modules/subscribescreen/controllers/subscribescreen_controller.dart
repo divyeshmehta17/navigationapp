@@ -5,6 +5,9 @@ import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../models/subscriptions.dart';
+import '../../../services/dio/api_service.dart';
+
 class SubscribescreenController extends GetxController {
   RxBool isSubscribed = false.obs; // Track subscription status
   RxList<IAPItem> productList = <IAPItem>[].obs; // Use RxList for reactivity
@@ -12,7 +15,7 @@ class SubscribescreenController extends GetxController {
   StreamSubscription<PurchaseResult?>? _purchaseErrorSubscription;
   StreamSubscription<ConnectionResult>? _connectionSubscription;
   RxInt selectedSubscriptionIndex = 0.obs; // Track selected subscription index
-
+  Rxn<Subscriptions> subscriptions = Rxn();
   @override
   void onInit() {
     super.onInit();
@@ -111,11 +114,7 @@ class SubscribescreenController extends GetxController {
 
   void buySubscription(String productId) async {
     try {
-      await FlutterInappPurchase.instance
-          .requestSubscription(productId)
-          .then((response) {
-        print(response);
-      });
+      await FlutterInappPurchase.instance.requestSubscription(productId);
     } catch (error) {
       print('Error purchasing subscription: ${error.toString()}');
       // Show a snackbar for user feedback
@@ -123,10 +122,15 @@ class SubscribescreenController extends GetxController {
     }
   }
 
-  void _handlePurchaseUpdated(PurchasedItem? purchasedItem) {
+  Future<void> _handlePurchaseUpdated(PurchasedItem? purchasedItem) async {
     if (purchasedItem != null) {
       // Verify subscription and update UI state
-      print('Subscription successful: ${purchasedItem.productId}');
+      await APIManager.postSubscribe(
+              purchaseToken: 'test', productId: 'test', transactionId: 'test')
+          .then((response) {
+        subscriptions.value = response.data;
+        print(subscriptions.value!.data!.purchaseToken);
+      });
       isSubscribed.value = true;
       FlutterInappPurchase.instance
           .acknowledgePurchaseAndroid(purchasedItem.purchaseToken.toString());

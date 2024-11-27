@@ -17,7 +17,8 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../customwidgets/globalcontroller.dart';
 import '../../../models/googledirectionapiresponse.dart';
-import '../../../models/polylinestrack.dart';
+import '../../explore/controllers/explore_controller.dart';
+import '../../searchview/controllers/searchview_controller.dart';
 
 class RealtimenavigationController extends GetxController {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
@@ -48,7 +49,8 @@ class RealtimenavigationController extends GetxController {
   Rxn<GoogleDIrectionApiResponseRoutesLegsSteps> googleManuvers = Rxn();
   final PanelController panelController = PanelController();
   GoogleMapController? mapController;
-  final GetRoutes getroutes = Get.arguments['getroutes'];
+  dynamic getroutes;
+  // final GetRoutes getroutes = Get.arguments['getroutes'];
   RxString waypointsStr = ''.obs;
   RxDouble currentHeading = 0.0.obs;
   RxDouble totalDurationInSeconds = 0.0.obs;
@@ -66,9 +68,24 @@ class RealtimenavigationController extends GetxController {
 
   BitmapDescriptor? userLocationIcon;
 
+  RxDouble currentZoom = 18.5.obs; // Default zoom level
+  //RxDouble currentHeading = 0.0.obs; // Default heading
+  RxDouble tilt = 90.0.obs; // Default tilt
   @override
   void onInit() {
     super.onInit();
+    final previousRoute = Get.previousRoute;
+    print('Previous Route: $previousRoute');
+
+    // Based on the previous route, set getroutes accordingly
+    if (previousRoute == '/customnavigationbar') {
+      getroutes = Get.find<ExploreController>().getroutes.value!.data;
+    } else if (previousRoute == '/searchview') {
+      getroutes = Get.find<SearchviewController>().getroutes.value!.data;
+    } else {
+      // Default logic, if needed
+      getroutes = null;
+    }
     if (Get.arguments['sessionId'] != null) {
       sessionId = Get.arguments['sessionId'];
     } else {
@@ -80,7 +97,6 @@ class RealtimenavigationController extends GetxController {
       estimatedTime.value =
           DateTime.now().add(Duration(minutes: duration.toInt()));
     });
-
     polylines.value = Get.arguments['polylines'];
     updateMap();
     fetchCurrentLocationPlaceName();
@@ -119,21 +135,85 @@ class RealtimenavigationController extends GetxController {
     updateMap(); // Update the map with the new marker once loaded
   }
 
+  // void startTrackingPosition() {
+  //   positionStreamSubscription =
+  //       Geolocator.getPositionStream().listen((Position position) {
+  //     currentPosition = LatLng(position.latitude, position.longitude);
+  //     currentHeading.value = position.heading;
+  //     _updateCamera(); // Automatically update the camera with real-time heading
+  //   });
+  // }
   void startTrackingPosition() {
     positionStreamSubscription = Geolocator.getPositionStream()
         .debounceTime(debounceDurationNavigation)
         .listen((Position position) {
-      LatLng newPosition = LatLng(position.latitude, position.longitude);
-      currentPosition = newPosition;
+      currentPosition = LatLng(position.latitude, position.longitude);
       //  _animateChevronMovement(newPosition);
-      _smoothCameraTransition(newPosition);
-      updatePassedSegments();
+      _smoothCameraTransition(LatLng(position.latitude, position.longitude));
+      currentHeading.value = position.heading;
+      _updateCamera();
+      filterPolylineCoordinates();
       updateCurrentStep(); // Check for maneuvers after updating the position
 
       // Update the user's speed (in km/h)
       userSpeed.value = position.speed * 3.6; // speed in km/h
       print('userspeed $userSpeed');
     });
+  }
+
+  void filterPolylineCoordinates() {
+    if (polylineCoordinates.isEmpty) {
+      print('objectttttttttt');
+    }
+    ;
+
+    // Find the closest point to the user's current position
+    int closestIndex = -1;
+    double minDistance = double.infinity;
+
+    for (int i = 0; i < polylineCoordinates.length; i++) {
+      double distance = Geolocator.distanceBetween(
+        currentPosition.latitude,
+        currentPosition.longitude,
+        polylineCoordinates[i].latitude,
+        polylineCoordinates[i].longitude,
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    // If a close point is found, remove all points before it
+    if (closestIndex != -1) {
+      polylineCoordinates.removeRange(0, closestIndex);
+      updatePolyline(); // Update the polyline on the map
+    }
+  }
+
+  void updatePolyline() {
+    polylines.clear();
+    polylines.add(Polyline(
+      polylineId: const PolylineId('navigation'),
+      points: polylineCoordinates.toList(),
+      color: Colors.blue, // Adjust color as needed
+      width: 5, // Adjust width as needed
+    ));
+  }
+
+  void _updateCamera() {
+    if (mapController != null) {
+      mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: currentPosition,
+            zoom: currentZoom.value,
+            tilt: tilt.value,
+            bearing: currentHeading.value,
+          ),
+        ),
+      );
+    }
   }
 
   Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
@@ -152,9 +232,9 @@ class RealtimenavigationController extends GetxController {
 
     CameraPosition newCameraPosition = CameraPosition(
       target: newPosition,
-      zoom: 20.0, // Adjust based on your needs
+      zoom: 17.0, // Adjust based on your needs
       tilt: 90.0, // Optional: tilt for better perspective
-      bearing: currentHeading.value - 240, // Rotate based on the heading
+      bearing: currentHeading.value - 180, // Rotate based on the heading
     );
 
     // Use animateCamera for smoother movement
@@ -163,87 +243,49 @@ class RealtimenavigationController extends GetxController {
     );
   }
 
-  Future<void> _animateChevronMovement(LatLng newPosition) async {
-    if (mapController == null) return;
+  // Future<void> _animateChevronMovement(LatLng newPosition) async {
+  //   if (mapController == null) return;
+  //
+  //   LatLng currentLatLng = LatLng(
+  //     globalController.currentLatitude.value,
+  //     globalController.currentLongitude.value,
+  //   );
+  //
+  //   // Smooth transition between the positions over 1 second
+  //   int animationDuration = 1000; // Animation duration in milliseconds
+  //   for (double t = 0; t <= 1.0; t += 0.05) {
+  //     double lat = lerp(currentLatLng.latitude, newPosition.latitude, t);
+  //     double lng = lerp(currentLatLng.longitude, newPosition.longitude, t);
+  //     LatLng animatedPosition = LatLng(lat, lng);
+  //
+  //     // Move the camera with the user’s position smoothly
+  //
+  //     // Update the position every few milliseconds for smooth animation
+  //     await Future.delayed(
+  //         Duration(milliseconds: (animationDuration * 0.05).toInt()));
+  //   }
+  //
+  //   // Finally, update the global controller's position to the new position
+  //   globalController.currentLatitude.value = newPosition.latitude;
+  //   globalController.currentLongitude.value = newPosition.longitude;
+  //   _updateUserMarker(
+  //       newPosition); // Update the user location marker on the map
+  // }
+  //
+  // // A linear interpolation function for latitude/longitude
+  // double lerp(double start, double end, double t) {
+  //   return start + t * (end - start);
+  // }
 
-    LatLng currentLatLng = LatLng(
-      globalController.currentLatitude.value,
-      globalController.currentLongitude.value,
-    );
-
-    // Smooth transition between the positions over 1 second
-    int animationDuration = 1000; // Animation duration in milliseconds
-    for (double t = 0; t <= 1.0; t += 0.05) {
-      double lat = lerp(currentLatLng.latitude, newPosition.latitude, t);
-      double lng = lerp(currentLatLng.longitude, newPosition.longitude, t);
-      LatLng animatedPosition = LatLng(lat, lng);
-
-      // Move the camera with the user’s position smoothly
-
-      // Update the position every few milliseconds for smooth animation
-      await Future.delayed(
-          Duration(milliseconds: (animationDuration * 0.05).toInt()));
-    }
-
-    // Finally, update the global controller's position to the new position
-    globalController.currentLatitude.value = newPosition.latitude;
-    globalController.currentLongitude.value = newPosition.longitude;
-    _updateUserMarker(
-        newPosition); // Update the user location marker on the map
-  }
-
-  // A linear interpolation function for latitude/longitude
-  double lerp(double start, double end, double t) {
-    return start + t * (end - start);
-  }
-
-  void updatePassedSegments() {
-    if (polylineCoordinates.isEmpty) return;
-
-    List<LatLng> newPolylineCoordinates = [];
-    bool updated = false; // Track if any segment is passed
-
-    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-      LatLng start = polylineCoordinates[i];
-      LatLng end = polylineCoordinates[i + 1];
-
-      if (isSegmentPassed(start, end)) {
-        if (!passedSegments.contains(start)) {
-          passedSegments.add(start);
-          updated = true; // Mark as updated if a segment is passed
-        }
-      } else {
-        newPolylineCoordinates.add(start);
-        newPolylineCoordinates.add(end);
-      }
-    }
-
-    // Only update polylineCoordinates if there's a significant change
-    if (updated) {
-      polylineCoordinates.value = newPolylineCoordinates;
-    }
-  }
-
-  bool isSegmentPassed(LatLng start, LatLng end) {
-    double distanceToEnd = Geolocator.distanceBetween(
-      currentPosition.latitude,
-      currentPosition.longitude,
-      end.latitude,
-      end.longitude,
-    );
-
-    return distanceToEnd < 10; // Example threshold
-  }
-
-  void decodePolyline() {
-    List<PointLatLng> points =
-        PolylinePoints().decodePolyline(getroutes.data!.points.toString());
+  Future<void> decodePolyline() async {
+    List<PointLatLng> points = PolylinePoints().decodePolyline(
+        Get.find<ExploreController>().getroutes.value!.data!.points.toString());
     polylineCoordinates.value =
         points.map((point) => LatLng(point.latitude, point.longitude)).toList();
+    await fetchAndDisplayDirections(polylineCoordinates);
     if (polylineCoordinates.isNotEmpty) {
       startPoint.value = polylineCoordinates.first;
       endPoint.value = polylineCoordinates.last;
-      fetchAndDisplayDirections(polylineCoordinates);
     }
   }
 
@@ -481,6 +523,7 @@ class RealtimenavigationController extends GetxController {
       GoogleDIrectionApiResponseRoutesLegsSteps step,
       double distanceToManeuver) {
     // Get the maneuver text, like "Take right" or "Take left"
+    print('object ${step.maneuver}');
     String maneuverText = getManeuverText(step.maneuver);
 
     // Show remaining distance in meters

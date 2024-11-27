@@ -16,7 +16,7 @@ class ResetpasswordView extends GetView<ResetpasswordController> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const CustomAppBar(
-          title: 'Push Notification',
+          title: 'Reset Password',
         ),
         body: SingleChildScrollView(
           child: Column(

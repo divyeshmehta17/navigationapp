@@ -11,5 +11,6 @@ class PhoneloginController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
   }
 }

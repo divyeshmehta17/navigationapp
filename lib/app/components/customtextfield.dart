@@ -16,10 +16,13 @@ class CustomTextField extends StatelessWidget {
   final bool? enabled;
   final List<TextInputFormatter>? inputFormatters;
   void Function(String)? onChanged;
+  Color? color;
+  InputDecoration? decoration;
   CustomTextField(
       {super.key,
       this.maxLines = 1,
       this.controller,
+      this.color,
       this.onChanged,
       this.hintText,
       this.suffixIcon,
@@ -27,6 +30,7 @@ class CustomTextField extends StatelessWidget {
       this.onTap,
       this.inputFormatters,
       this.enabled,
+      this.decoration,
       this.onGestureTap});
 
   @override
@@ -34,7 +38,9 @@ class CustomTextField extends StatelessWidget {
     return GestureDetector(
       onTap: onGestureTap,
       child: Container(
-        color: Colors.grey.shade200,
+        decoration: BoxDecoration(
+            color: color ?? Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(8.kw)),
         child: TextField(
           maxLines: maxLines,
           onChanged: onChanged,
@@ -42,29 +48,30 @@ class CustomTextField extends StatelessWidget {
           onTap: onTap,
           enabled: enabled,
           controller: controller,
-          decoration: InputDecoration(
-            fillColor: context.neutralGrey,
-            hintText: hintText,
-            hintStyle: TextStyleUtil.poppins400(
-              fontSize: 14.kh,
-              color: context.darkGrey,
-            ),
-            suffixIcon: suffixIcon,
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: context.lightGrey),
-              borderRadius: BorderRadius.circular(6.kw),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: context.lightGrey),
-              borderRadius: BorderRadius.circular(6.kw),
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(6.kw),
-            ),
-            disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6.kw),
-                borderSide: const BorderSide(color: Colors.transparent)),
-          ),
+          decoration: decoration ??
+              InputDecoration(
+                fillColor: context.neutralGrey,
+                hintText: hintText,
+                hintStyle: TextStyleUtil.poppins400(
+                  fontSize: 14.kh,
+                  color: context.darkGrey,
+                ),
+                suffixIcon: suffixIcon,
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.lightGrey),
+                  borderRadius: BorderRadius.circular(6.kw),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.lightGrey),
+                  borderRadius: BorderRadius.circular(6.kw),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6.kw),
+                ),
+                disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6.kw),
+                    borderSide: const BorderSide(color: Colors.transparent)),
+              ),
         ),
       ),
     );

@@ -10,6 +10,7 @@ import '../../../components/customappbar.dart';
 import '../../../components/navigationAppButton.dart';
 import '../../../constants/image_constant.dart';
 import '../../../routes/app_pages.dart';
+import '../../../services/auth.dart';
 import '../../../services/text_style_util.dart';
 import '../controllers/otpverification_controller.dart';
 
@@ -79,7 +80,7 @@ class OtpverificationView extends GetView<OtpverificationController> {
             label: 'Continue',
             onTap: () async {
               if (controller.isEnabled.value == true) {
-                controller.verifyOtp();
+                controller.verifyOtp(context);
               }
             },
             color: controller.isEnabled.value == false
@@ -96,7 +97,11 @@ class OtpverificationView extends GetView<OtpverificationController> {
           ),
         ),
         TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Get.find<Auth>().resendMobileOTP(
+                phoneno: controller.phoneArgument['phoneNumber'],
+              );
+            },
             child: Text("Resend code",
                 style: TextStyleUtil.poppins600(
                     fontSize: 16.kh, color: context.brandColor1)))

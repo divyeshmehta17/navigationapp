@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart'; // Import DioError
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mopedsafe/app/services/colors.dart';
 
 import '../../../models/userdetails.dart';
 import '../../../routes/app_pages.dart';
@@ -19,10 +20,20 @@ class OtpverificationController extends GetxController {
     isEnabled.value = false;
   }
 
-  void verifyOtp() async {
-    Get.find<Auth>().verifyMobileOtp(otp: otp.value).then((value) {
+  void verifyOtp(BuildContext context) async {
+    final isOtpValid = await Get.find<Auth>().verifyMobileOtp(otp: otp.value);
+    if (isOtpValid) {
       loginApi();
-    });
+    } else {
+      // Display an error message without additional actions that could restart the app.
+      Get.snackbar(
+        'Invalid OTP',
+        'The OTP you entered is incorrect. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: context.brandColor1,
+        colorText: Colors.white,
+      );
+    }
   }
 
   Future<void> loginApi() async {

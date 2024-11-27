@@ -42,6 +42,8 @@ import '../modules/saved/bindings/saved_binding.dart';
 import '../modules/saved/views/saved_view.dart';
 import '../modules/savednavgation/bindings/savednavgation_binding.dart';
 import '../modules/savednavgation/views/savednavgation_view.dart';
+import '../modules/savedrealtimenavigation/bindings/savedrealtimenavigation_binding.dart';
+import '../modules/savedrealtimenavigation/views/savedrealtimenavigation_view.dart';
 import '../modules/searchview/bindings/searchview_binding.dart';
 import '../modules/searchview/views/searchview_view.dart';
 import '../modules/setprofiledetails/bindings/setprofiledetails_binding.dart';
@@ -190,6 +192,11 @@ class AppPages {
       name: _Paths.SAVEDNAVGATION,
       page: () => SavednavgationView(),
       binding: SavednavgationBinding(),
+    ),
+    GetPage(
+      name: _Paths.SAVEDREALTIMENAVIGATION,
+      page: () => const SavedrealtimenavigationView(),
+      binding: SavedrealtimenavigationBinding(),
     ),
   ];
 }

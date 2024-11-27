@@ -8,6 +8,7 @@ import 'package:mopedsafe/app/services/responsive_size.dart';
 import 'package:mopedsafe/app/services/text_style_util.dart';
 
 import '../../../components/customappbar.dart';
+import '../../../customwidgets/globalalertdialog.dart';
 import '../controllers/contactus_controller.dart';
 
 class ContactusView extends GetView<ContactusController> {
@@ -105,9 +106,16 @@ class ContactusView extends GetView<ContactusController> {
               NavigationAppButton(
                 label: 'Submit',
                 onTap: () {
-                  controller.ContactUsApi(
+                  showGlobalDialog(
                       title: controller.titleController.text,
-                      description: controller.questionController.text);
+                      content: 'Are You Sure You Want to Submit',
+                      onConfirm: () {
+                        controller.ContactUsApi(
+                            title: controller.titleController.text,
+                            context: context,
+                            description: controller.questionController.text);
+                      },
+                      context: context);
                 },
                 textStyle: TextStyleUtil.poppins500(
                   fontSize: 16.kh,

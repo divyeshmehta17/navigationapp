@@ -11,6 +11,7 @@ class SavedView extends GetView<SavedController> {
 
   @override
   Widget build(BuildContext context) {
+    Get.lazyPut(() => SavedController());
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -32,7 +33,7 @@ class SavedView extends GetView<SavedController> {
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
-                        Get.toNamed(Routes.SAVEDNAVGATION, arguments: {
+                        Get.toNamed(Routes.DIRECTIONCARD, arguments: {
                           'getsavedRoutes': controller.getsavedRoutes
                         });
                       },

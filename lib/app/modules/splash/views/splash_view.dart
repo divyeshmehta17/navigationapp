@@ -21,9 +21,11 @@ class SplashView extends GetView<SplashController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CommonImageView(
-              svgPath: ImageConstant.svgappIcon,
+              imagePath: ImageConstant.pngappicon,
+              width: 120.kw, // You can adjust the size as needed
+              height: 120.kh,
             ).paddingOnly(bottom: 24.kh),
-            Text("Navigation App",
+            Text("MopedGPS",
                 style: TextStyleUtil.poppins500(
                     fontSize: 36.kh, color: Colors.white))
           ],

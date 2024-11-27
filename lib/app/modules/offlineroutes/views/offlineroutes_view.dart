@@ -23,22 +23,23 @@ class OfflineroutesView extends GetView<OfflineroutesController> {
               children: [
                 ListTile(
                   title: Text(
-                    route['title'].toString(),
+                    'Pending',
+                    //route['title'].toString(),
                     style: TextStyleUtil.poppins500(fontSize: 14.kh),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${route['routesSaved']} routes saved',
-                        style: TextStyleUtil.poppins400(fontSize: 12.kh),
-                      ),
-                      Text(
-                        route['distance'].toString(),
-                        style: TextStyleUtil.poppins400(fontSize: 12.kh),
-                      ),
-                    ],
-                  ),
+                  // subtitle: Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   children: [
+                  //     Text(
+                  //       '${route['routesSaved']} routes saved',
+                  //       style: TextStyleUtil.poppins400(fontSize: 12.kh),
+                  //     ),
+                  //     Text(
+                  //       route['distance'].toString(),
+                  //       style: TextStyleUtil.poppins400(fontSize: 12.kh),
+                  //     ),
+                  //   ],
+                  // ),
                   trailing: IconButton(
                     icon: const Icon(Icons.more_vert),
                     onPressed: () {

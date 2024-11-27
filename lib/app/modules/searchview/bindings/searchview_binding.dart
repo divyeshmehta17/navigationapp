@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../directioncard/bindings/directioncard_binding.dart';
 import '../controllers/searchview_controller.dart';
 
 class SearchviewBinding extends Bindings {
@@ -8,5 +9,6 @@ class SearchviewBinding extends Bindings {
     Get.lazyPut<SearchviewController>(
       () => SearchviewController(),
     );
+    DirectioncardBinding().dependencies();
   }
 }

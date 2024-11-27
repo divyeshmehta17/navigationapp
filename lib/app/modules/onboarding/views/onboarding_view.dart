@@ -71,12 +71,17 @@ class OnboardingView extends GetView<OnboardingController> {
                 },
               ).paddingOnly(left: 22.kw, right: 22, top: 24.kh, bottom: 12.kh),
             ),
-            CustomButton(
-              title: 'Skip',
-              outline: true,
-              color: Colors.white,
-              onTap: controller.loginPage,
-            ).paddingOnly(left: 22.kw, right: 22, bottom: 58.kh),
+            Obx(
+              () => controller.currentPage.value != controller.pages.length - 1
+                  ? CustomButton(
+                      title: 'Skip',
+                      outline: true,
+                      color: Colors.white,
+                      onTap: controller.loginPage,
+                    ).paddingOnly(left: 22.kw, right: 22, bottom: 58.kh)
+                  : SizedBox()
+                      .paddingOnly(left: 22.kw, right: 22, bottom: 98.kh),
+            ),
           ],
         ),
       ),

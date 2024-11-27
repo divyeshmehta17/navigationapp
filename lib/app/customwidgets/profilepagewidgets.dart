@@ -37,26 +37,27 @@ Widget buildProfileOption(BuildContext context, String title, String route) {
 
 // Refactored to accept any controller
 Widget buildProfileInfo(
-    BuildContext context,
-    dynamic controller,
-    String Function(dynamic) getName,
-    String Function(dynamic) getEmail,
-    String Function(dynamic) getImageUrl) {
+  BuildContext context,
+  dynamic controller,
+  String Function(dynamic) getName,
+  String Function(dynamic) getEmail,
+  String Function(dynamic) getImageUrl,
+) {
   return Row(
     children: [
-      controller.userDetails.value == null
-          ? CircleAvatar(
-              radius: 40.kw,
-              backgroundImage: NetworkImage(getImageUrl(controller)),
-            )
-          : CircleAvatar(
-              radius: 40.kw,
-              child: CommonImageView(
+      CircleAvatar(
+        radius: 40.kw,
+        backgroundImage: getImageUrl(controller).isNotEmpty
+            ? NetworkImage(getImageUrl(controller))
+            : null,
+        child: getImageUrl(controller).isEmpty
+            ? CommonImageView(
                 svgPath: ImageConstant.svgdummyperson,
                 height: 20.kh,
                 width: 20.kw,
-              ),
-            ),
+              )
+            : null,
+      ),
       SizedBox(width: 16.kw),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,

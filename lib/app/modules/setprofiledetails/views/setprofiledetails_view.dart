@@ -35,6 +35,7 @@ class SetprofiledetailsView extends GetView<SetprofiledetailsController> {
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Stack(
@@ -89,35 +90,104 @@ class SetprofiledetailsView extends GetView<SetprofiledetailsController> {
               ),
             ),
             20.kheightBox,
-            CustomTextField(
-              hintText: 'Enter your full name',
-              controller: controller.nameController,
+            Text(
+              'Enter your full name',
+              style: TextStyleUtil.poppins500(fontSize: 12.kh),
             ),
-            20.kheightBox,
-            CustomTextField(
-              hintText: '1/1/1998',
-              controller: controller.dobController,
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.calendar_month),
-                onPressed: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2100),
-                  );
-                  if (pickedDate != null) {
-                    String formattedDate =
-                        DateFormat('yyyy-MM-dd').format(pickedDate);
-                    controller.dobController.text = formattedDate;
-                  }
-                },
+            SizedBox(
+              height: 45.kh,
+              child: CustomTextField(
+                controller: controller.nameController,
+                decoration: InputDecoration(
+                    hintText: 'Enter your full name',
+                    hintStyle: TextStyleUtil.poppins400(
+                        fontSize: 14.kh, color: context.darkGrey),
+                    contentPadding: EdgeInsets.only(bottom: 24.kh, left: 18.kw),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18.kw)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18.kw),
+                        borderSide: BorderSide(color: context.textboxGrey)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18.kw),
+                        borderSide: BorderSide(color: context.textboxGrey)),
+                    filled: true,
+                    fillColor: Colors.white),
               ),
             ),
             20.kheightBox,
+            Text(
+              'D.O.B',
+              style: TextStyleUtil.poppins500(fontSize: 12.kh),
+            ),
             CustomTextField(
-              hintText: 'xyz@gmail.com',
+              controller: controller.dobController,
+              decoration: InputDecoration(
+                  hintText: '1/1/1998',
+                  hintStyle: TextStyleUtil.poppins400(
+                      fontSize: 14.kh, color: context.darkGrey),
+                  contentPadding: EdgeInsets.only(bottom: 24.kh, left: 18.kw),
+                  suffixIcon: IconButton(
+                    icon: const Icon(
+                      Icons.calendar_month,
+                    ),
+                    onPressed: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        String formattedDate =
+                            DateFormat('yyyy-MM-dd').format(pickedDate);
+                        controller.dobController.text = formattedDate;
+                      }
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw),
+                      borderSide: BorderSide(color: context.textboxGrey)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw),
+                      borderSide: BorderSide(color: context.textboxGrey)),
+                  filled: true,
+                  fillColor: Colors.white),
+            ),
+            Text(
+              'Email',
+              style: TextStyleUtil.poppins500(fontSize: 12.kh),
+            ),
+            20.kheightBox,
+            CustomTextField(
               controller: controller.emailController,
+              decoration: InputDecoration(
+                  hintText: 'xyz@gmail.com',
+                  suffixIcon: TextButton(
+                    onPressed: () {
+                      controller.sendEmailVerification();
+                    },
+                    child: Text(
+                      'Verify',
+                      style: TextStyleUtil.poppins500(
+                          fontSize: 14.kh, color: context.brandColor1),
+                    ),
+                  ),
+                  hintStyle: TextStyleUtil.poppins400(
+                      fontSize: 14.kh, color: context.darkGrey),
+                  contentPadding: EdgeInsets.only(bottom: 24.kh, left: 18.kw),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw),
+                      borderSide: BorderSide(color: context.textboxGrey)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.kw),
+                      borderSide: BorderSide(color: context.textboxGrey)),
+                  filled: true,
+                  fillColor: Colors.white),
               suffixIcon: TextButton(
                 child: Text(
                   'Verify',
@@ -127,22 +197,94 @@ class SetprofiledetailsView extends GetView<SetprofiledetailsController> {
                 onPressed: () async {},
               ),
             ),
-            250.kheightBox,
+            Text(
+              'Moped Speed Limit',
+              style: TextStyleUtil.poppins500(fontSize: 12.kh),
+            ),
+            10.kheightBox,
+            Obx(() => Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18.kw),
+                      color: Colors.white,
+                      border: Border.all(color: context.textboxGrey)),
+                  child: DropdownButton<String>(
+                    value: controller.selectedSpeedLimit.value,
+                    borderRadius: BorderRadius.circular(18.kw),
+                    hint: Text(
+                      'Select speed limit',
+                      style: TextStyle(color: context.textboxGrey),
+                    ),
+                    padding: EdgeInsets.only(left: 18.kw),
+                    items: [
+                      'Max Speed 25kmph',
+                      'Max Speed 30 kmph',
+                      'Max Speed 45 mph'
+                    ]
+                        .map((speed) => DropdownMenuItem(
+                              value: speed,
+                              child: Text(speed,
+                                  style: TextStyleUtil.poppins400(
+                                      fontSize: 14.kh,
+                                      color: context.darkGrey)),
+                            ))
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      controller.selectedSpeedLimit.value = newValue!;
+                    },
+                    isExpanded: true,
+                  ),
+                )),
+            200.kheightBox,
             CustomButton(
               onTap: () {
+                // Validate inputs
+                if (controller.nameController.text.trim().isEmpty) {
+                  Get.snackbar('Validation Error', 'Name cannot be empty',
+                      backgroundColor: Colors.red, colorText: Colors.white);
+                  return;
+                }
+
+                if (controller.dobController.text.trim().isEmpty) {
+                  Get.snackbar(
+                      'Validation Error', 'Date of Birth cannot be empty',
+                      backgroundColor: Colors.red, colorText: Colors.white);
+                  return;
+                }
+
+                if (controller.emailController.text.trim().isEmpty) {
+                  Get.snackbar('Validation Error', 'Email cannot be empty',
+                      backgroundColor: Colors.red, colorText: Colors.white);
+                  return;
+                }
+
+                if (controller.selectedSpeedLimit.value.trim().isEmpty) {
+                  Get.snackbar('Validation Error', 'Max speed cannot be empty',
+                      backgroundColor: Colors.red, colorText: Colors.white);
+                  return;
+                }
+
+                // Extracting numeric value from selected speed limit
+                final numericSpeed = RegExp(r'\d+')
+                        .firstMatch(controller.selectedSpeedLimit.value)
+                        ?.group(0) ??
+                    '0';
+
+                // Call the signUp API
                 controller.signUpApi(
-                    name: controller.nameController.text,
-                    dob: controller.dobController.text,
-                    email: controller.emailController.text,
-                    key: controller.profileimage.value == null
-                        ? ''
-                        : controller.profileimage.value!.files![0]!.key
-                            .toString(),
-                    url: controller.profileimage.value == null
-                        ? ''
-                        : controller.profileimage.value!.files![0]!.url
-                            .toString(),
-                    isEmailVerified: false);
+                  name: controller.nameController.text,
+                  maxSpeed: numericSpeed, // Pass only the numeric part
+                  dob: controller.dobController.text,
+                  email: controller.emailController.text,
+                  key: controller.profileimage.value == null
+                      ? ''
+                      : controller.profileimage.value!.files![0]!.key
+                          .toString(),
+                  url: controller.profileimage.value == null
+                      ? ''
+                      : controller.profileimage.value!.files![0]!.url
+                          .toString(),
+                  isEmailVerified: false,
+                );
               },
               title: 'Submit',
               textcolor: Colors.white,

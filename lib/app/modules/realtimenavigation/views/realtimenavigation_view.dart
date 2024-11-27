@@ -20,8 +20,10 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
           alignment: Alignment.bottomLeft,
           children: [
             GoogleMap(
-              polylines: controller.polylines,
+              polylines: controller.polylines.toSet(),
               markers: Set<Marker>.of(controller.markers),
+              indoorViewEnabled: true,
+              buildingsEnabled: false,
               compassEnabled: true,
               trafficEnabled: true,
               myLocationEnabled: true,
@@ -58,6 +60,8 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
               left: 10,
               right: 10,
               child: Obx(() {
+                print('totaldistance ${controller.totalduration}');
+                print(controller.totalduration);
                 return Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8.kw),
@@ -94,10 +98,13 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '${controller.totalduration.toStringAsFixed(2)} mins (${controller.totalDistance.toStringAsFixed(2)} km)',
-                              style: TextStyleUtil.poppins400(
-                                  fontSize: 19.kh, color: context.brandColor1),
+                            Obx(
+                              () => Text(
+                                '${controller.totalduration.toStringAsFixed(2)} mins (${controller.totalDistance.toStringAsFixed(2)} km)',
+                                style: TextStyleUtil.poppins400(
+                                    fontSize: 19.kh,
+                                    color: context.brandColor1),
+                              ),
                             ),
                             Text(
                               'ETA: ${controller.formatEstimatedTime(controller.estimatedTime.value)}',

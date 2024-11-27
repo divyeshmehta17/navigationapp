@@ -1,7 +1,8 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mopedsafe/app/services/snackbar.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -131,14 +132,15 @@ class Auth extends GetxService {
   Future<void> mobileLoginOtp(
       {required String phoneno,
       required bool showLoading,
+      required BuildContext context,
       dynamic arguments}) async {
     if (showLoading) {
       DialogHelper.showLoading();
     }
-
+    print({'test ${auth.firebaseAuth.app.options.projectId}'});
     await auth.requestVerificationCode(
       phoneNumber: phoneno,
-      timeout: Duration(seconds: 0),
+      timeout: const Duration(seconds: 0),
       onCodeSent: (authenticationResult) async {
         showLoading = false;
         DialogHelper.hideDialog();
@@ -146,11 +148,47 @@ class Auth extends GetxService {
       },
       onVerificationFailed: (exception) {
         debugPrint(exception.message);
-        showMySnackbar(msg: exception.message ?? '');
+        showMySnackbar(
+            msg: exception.message ?? 'OTP request failed. Please try again.');
         showLoading = false;
         DialogHelper.hideDialog();
+
+        // Show the failure popup dialog
+        _showErrorDialog(context, exception.message!);
       },
     );
+  }
+
+  // Error dialog
+  void _showErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(errorMessage),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Method to extract the error message from the API response
+  String _getErrorMessage(dynamic error) {
+    // Check if error is a DioError and contains response data
+    if (error is DioException &&
+        error.response != null &&
+        error.response!.data != null) {
+      // You can modify this based on how the API sends errors
+      return error.response!.data['message'] ?? 'An unknown error occurred.';
+    } else {
+      return 'An error occurred while submitting your query.';
+    }
   }
 
   Future<void> resendMobileOTP({required String phoneno}) async {
@@ -173,8 +211,6 @@ class Auth extends GetxService {
       if (!value.hasError) {
         await handleGetContact();
         status = true;
-      } else {
-        showMySnackbar(msg: value.errorMessage ?? '');
       }
     });
 

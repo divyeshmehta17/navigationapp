@@ -6,7 +6,7 @@ import '../../../routes/app_pages.dart';
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
-  var currentPage = 0.0.obs; // Observable to track the current page
+  RxInt currentPage = 0.obs; // Observable to track the current page
   List<OnBoardingModel> pages = [
     OnBoardingModel(
         svg: ImageConstant.svgfindmopedsplash,
@@ -27,7 +27,7 @@ class OnboardingController extends GetxController {
 
   OnboardingController() {
     pageController.addListener(() {
-      currentPage.value = pageController.page ?? 0;
+      currentPage.value = pageController.page!.toInt() ?? 0;
     });
   }
 
@@ -35,6 +35,14 @@ class OnboardingController extends GetxController {
 
   void loginPage() {
     Get.toNamed(Routes.PHONELOGIN);
+  }
+
+  @override
+  void onInit() {
+    pageController.addListener(() {
+      // Update currentPage whenever the page changes
+      currentPage.value = pageController.page?.round() ?? 0;
+    });
   }
 }
 

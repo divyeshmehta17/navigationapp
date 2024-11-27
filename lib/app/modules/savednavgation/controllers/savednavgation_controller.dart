@@ -73,6 +73,7 @@ class SavednavgationController extends GetxController {
   }
 
   void decodePolyline() {
+    print('pointss ${getSavedRoutes!.value!.data!.results![0]!.points}');
     final points = PolylinePoints()
         .decodePolyline(getSavedRoutes!.value!.data!.results![0]!.points);
     polylineCoordinates.value =

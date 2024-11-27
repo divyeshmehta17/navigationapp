@@ -65,13 +65,16 @@ class SavednavgationView extends GetView<SavednavgationController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const buildPanelHandle(),
+              buildPanelHandle(),
               buildHeader('Routes', context),
               _buildLocationFields(context),
               Divider(color: context.lightGrey),
               GestureDetector(
                 onTap: () {
-                  Get.toNamed(Routes.REALTIMENAVIGATION);
+                  Get.toNamed(Routes.SAVEDREALTIMENAVIGATION, arguments: {
+                    'polylines': controller.polylineCoordinates,
+                    'getSavedRoutes': controller.getSavedRoutes
+                  });
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,14 +83,14 @@ class SavednavgationView extends GetView<SavednavgationController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${(controller.getSavedRoutes!.value!.data!.results![0]!.distance)} km',
+                          '${((controller.getSavedRoutes!.value!.data!.results![0]!.distance) * 0.001).toStringAsFixed(2)} km',
                           style: TextStyleUtil.poppins500(
                             fontSize: 18.kh,
                             color: context.brandColor1,
                           ),
                         ),
                         Text(
-                          'via StreetName',
+                          'via {StreetName}',
                           style: TextStyleUtil.poppins400(
                             fontSize: 12.kh,
                           ),

@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "4063681274",
-    "firebase_url": "https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "iumopedsafe",
-    "storage_bucket": "iumopedsafe.appspot.com"
+    "project_number": "734724432257",
+    "project_id": "mopedgps-e5c51",
+    "storage_bucket": "mopedgps-e5c51.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:4063681274:android:ae906481d833087e1d8743",
+        "mobilesdk_app_id": "1:734724432257:android:aabc861ab18de3ea0d0880",
         "android_client_info": {
           "package_name": "iu.mopedsafe.com"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCYwR0wbJ8B83zic7rDYBsO2eLSNnfPMIY"
+          "current_key": "AIzaSyA6asitgM8tbYW0r3QaiLtcYgDvpplkA_E"
         }
       ],
       "services": {

@@ -11,18 +11,19 @@ import '../services/text_style_util.dart';
 class buildLocationInputField extends StatelessWidget {
   buildLocationInputField(
       {super.key,
-      required this.hintText,
+      this.hintText,
       required this.controller,
       required this.context,
       this.focusNode,
       this.otherFocusNode,
       this.itemClick,
+      this.inputDecoration,
       this.color,
       this.textColor = Colors.black,
       this.suffixIcon,
       this.prefixIcon});
   void Function(Prediction)? itemClick;
-  final String hintText;
+  final String? hintText;
   final TextEditingController controller;
   final BuildContext context;
   final FocusNode? focusNode;
@@ -31,6 +32,7 @@ class buildLocationInputField extends StatelessWidget {
   final Color textColor;
   final Widget? suffixIcon;
   final Widget? prefixIcon;
+  final InputDecoration? inputDecoration;
   @override
   Widget build(BuildContext context) {
     return GooglePlaceAutoCompleteTextField(
@@ -41,15 +43,17 @@ class buildLocationInputField extends StatelessWidget {
           color: color ?? context.lightGrey,
         ),
         focusNode: focusNode,
-        inputDecoration: InputDecoration(
-          hintText: hintText,
-          border: InputBorder.none,
-          suffixIcon: suffixIcon,
-          prefixIcon: prefixIcon,
-          contentPadding: EdgeInsets.only(left: 8.kw, top: 12.kh),
-          hintStyle:
-              TextStyleUtil.poppins400(fontSize: 14.kh, color: textColor),
-        ),
+        isLatLngRequired: false,
+        inputDecoration: inputDecoration ??
+            InputDecoration(
+              hintText: hintText,
+              border: InputBorder.none,
+              suffixIcon: suffixIcon,
+              prefixIcon: prefixIcon,
+              contentPadding: EdgeInsets.only(left: 8.kw, top: 12.kh),
+              hintStyle:
+                  TextStyleUtil.poppins400(fontSize: 14.kh, color: textColor),
+            ),
         itemClick: itemClick);
   }
 }

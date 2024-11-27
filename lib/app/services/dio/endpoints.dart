@@ -21,4 +21,5 @@ class Endpoints {
   static const String getsavedRoutes = "route/get/all";
   static const String getsavedPlace = "route/place/get/all";
   static const String postsavePlace = "route/place/save";
+  static const String postsubscribe = "subscription/subscribe";
 }

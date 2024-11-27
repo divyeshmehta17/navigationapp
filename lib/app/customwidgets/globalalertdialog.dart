@@ -7,7 +7,8 @@ import 'package:mopedsafe/app/services/text_style_util.dart';
 
 void showGlobalDialog({
   required String title,
-  required String content,
+  String? content,
+  Widget? optionalcontent,
   required VoidCallback onConfirm,
   String confirmText = 'Confirm',
   String cancelText = 'Cancel',
@@ -16,8 +17,9 @@ void showGlobalDialog({
 }) {
   Get.dialog(
     AlertDialog(
+      scrollable: true,
       title: Text(title),
-      content: Text(content),
+      content: optionalcontent ?? Text(content ?? ''),
       actionsAlignment: MainAxisAlignment.center,
       actions: [
         Row(

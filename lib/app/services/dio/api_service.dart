@@ -40,7 +40,7 @@ class APIManager {
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: true)
         .post(Endpoints.baseUrl + Endpoints.saveRoutes, data: {
-      "points": startName, "startName": startName, "endName": endName,
+      "points": points, "startName": startName, "endName": endName,
       "instructions": instructions,
       "time": time,
       "distance": distance,
@@ -58,6 +58,7 @@ class APIManager {
 
   static Future<Response> postSetUserDetails({
     required String phone,
+    required String maxSpeed,
     required String name,
     required String dob,
     required String email,
@@ -73,6 +74,7 @@ class APIManager {
       "dob": dob,
       "email": email,
       "isEmailVerified": isEmailVerified,
+      "maxSpeed": maxSpeed
     };
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: false)
@@ -155,12 +157,14 @@ class APIManager {
       required String type,
       required String locationtype,
       required String addressLine,
+      required String placeId,
       required double lat,
       required double lng,
       required String title}) async {
     Map<String, dynamic> body = {
       "type": type,
       "title": title,
+      "placeId": placeId,
       "location": {
         "type": locationtype,
         "coordinates": [lat, lng], // Longitude, Latitude
@@ -170,6 +174,21 @@ class APIManager {
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: true)
         .post(Endpoints.baseUrl + Endpoints.postsavePlace, data: body);
+  }
+
+  static Future<Response> postSubscribe({
+    bool showSnakbar = true,
+    required String purchaseToken,
+    required String productId,
+    required String transactionId,
+  }) async {
+    return await DioClient(Dio(),
+            showSnakbar: showSnakbar, isOverlayLoader: true)
+        .post(Endpoints.baseUrl + Endpoints.postsubscribe, data: {
+      "purchaseToken": purchaseToken,
+      "productId": productId,
+      "transactionId": transactionId
+    });
   }
   //////////getapis
 

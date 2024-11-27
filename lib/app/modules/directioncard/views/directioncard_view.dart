@@ -1,6 +1,7 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
@@ -27,29 +28,34 @@ class DirectioncardView extends GetView<DirectioncardController> {
 
   @override
   Widget build(BuildContext context) {
+    Get.lazyPut(() => SearchviewController());
     Get.lazyPut(() => LocationController());
+
+    final position = controller.newcurrentPosition.value;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          GoogleMap(
-            polylines: controller.polylines.toSet(),
-            markers: Set<Marker>.of(controller.markers),
-            compassEnabled: true,
-            trafficEnabled: true,
-            buildingsEnabled: true,
-            myLocationEnabled: false,
-            myLocationButtonEnabled: false,
-            onMapCreated: (GoogleMapController mapController) {},
-            initialCameraPosition:
-                CameraPosition(target: controller.currentPosition, zoom: 13),
-          ),
-          SlidingUpPanelWidget(
-            panelController: controller.panelController,
-            minHeight: 100.0,
-            maxHeight: MediaQuery.of(context).size.height * 0.6,
-            panelContentBuilder: (context) => _panelContent(context),
-          ),
-        ],
+      body: Obx(
+        () => Stack(
+          children: [
+            GoogleMap(
+              polylines: controller.polylines.toSet(),
+              markers: Set<Marker>.of(controller.markers),
+              compassEnabled: true,
+              trafficEnabled: true,
+              buildingsEnabled: true,
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              onMapCreated: (GoogleMapController mapController) {},
+              initialCameraPosition: CameraPosition(target: position, zoom: 13),
+            ),
+            SlidingUpPanelWidget(
+              panelController: controller.panelController,
+              minHeight: 100.0,
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+              panelContentBuilder: (context) => _panelContent(context),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -89,14 +95,14 @@ class DirectioncardView extends GetView<DirectioncardController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${controller.getroutes.data!.time} mins (${controller.getroutes.data!.distance} km)',
+                          '${controller.getroutes!.data!.distance} km',
                           style: TextStyleUtil.poppins500(
                             fontSize: 18.kh,
                             color: context.brandColor1,
                           ),
                         ),
                         Text(
-                          'via ${controller.getroutes.data!.instructions![0]!.streetName}',
+                          'via ${controller.getroutes!.data!.instructions![0]!.streetName}',
                           style: TextStyleUtil.poppins400(
                             fontSize: 12.kh,
                           ),
@@ -163,9 +169,20 @@ class DirectioncardView extends GetView<DirectioncardController> {
                 hintText: controller.currentPlaceName.value,
                 controller: controller.currentLocationController,
                 context: context,
-                itemClick: (Prediction) {
-                  destinationLocationFocusNode.unfocus();
-                  FocusScope.of(context).requestFocus(currentLocationFocusNode);
+                itemClick: (Prediction prediction) async {
+                  // Fetch new latitude and longitude based on the prediction
+                  List<Location> locations =
+                      await locationFromAddress(prediction.description!);
+                  if (locations.isNotEmpty) {
+                    LatLng newLatLng = LatLng(
+                        locations.first.latitude, locations.first.longitude);
+
+                    // Call onLocationChanged with the new LatLng
+                    controller.onSourceLocationChanged(newLatLng);
+
+                    FocusScope.of(context)
+                        .requestFocus(currentLocationFocusNode);
+                  }
                 },
               ),
               16.kheightBox,
@@ -177,9 +194,20 @@ class DirectioncardView extends GetView<DirectioncardController> {
                   Get.find<SearchviewController>().searchcontroller.text =
                       prediction.description!;
                   final placeId = prediction.placeId;
-
                   // Fetch place details and store globally
                   await controller.fetchPlaceDetails(placeId!);
+                  List<Location> locations =
+                      await locationFromAddress(prediction.description!);
+                  if (locations.isNotEmpty) {
+                    print(controller.newcurrentPosition);
+                    print('not emoty');
+                    LatLng newDestinationLatLng = LatLng(
+                        locations.first.latitude, locations.first.longitude);
+
+                    // Call onLocationChanged with the new LatLng
+                    controller
+                        .onDestinationLocationChanged(newDestinationLatLng);
+                  }
                   // Access the global placeDetails variable
                   final placeDetails = controller.placeName;
                   print('placedetails $placeDetails');
@@ -208,7 +236,7 @@ class DirectioncardView extends GetView<DirectioncardController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildPanelHandle(),
+          const buildPanelHandle(),
           SizedBox(height: 16.kh),
           _buildPlaceHeader(),
           SizedBox(height: 8.kh),
@@ -259,7 +287,7 @@ class DirectioncardView extends GetView<DirectioncardController> {
   }
 
   Widget _buildPlaceDistance() {
-    return Text('${controller.getroutes.data!.distance} kms');
+    return Text('0.0 kms');
   }
 
   Widget _buildCountryText() {
@@ -318,15 +346,15 @@ class DirectioncardView extends GetView<DirectioncardController> {
           child: IconButton(
             onPressed: () {
               print(controller.getroutes.data!.points);
-              // controller.postSaveRoute(
-              //     points: controller.getroutes.data!.points,
-              //     type: 'SAVED',
-              //     placeId: controller.placeID,
-              //     time: controller.getroutes.data!.time,
-              //     distance: controller.getroutes.data!.distance,
-              //     instructions: controller.getroutes.data!.instructions,
-              //     startName: controller.currentPlaceName.value,
-              //     endName: controller.placeName.value);
+              controller.postSaveRoute(
+                  points: controller.getroutes.data!.points,
+                  type: 'SAVED',
+                  placeId: controller.placeID,
+                  time: controller.getroutes.data!.time,
+                  distance: controller.getroutes.data!.distance,
+                  instructions: controller.getroutes.data!.instructions,
+                  startName: controller.currentPlaceName.value,
+                  endName: controller.placeName.value);
             },
             icon: Icon(
               Icons.bookmark_border_outlined,
@@ -348,7 +376,7 @@ class buildPanelHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        margin: EdgeInsets.only(top: 10.kh),
+        margin: EdgeInsets.only(top: 0.kh),
         height: 5.kh,
         width: 40.kw,
         decoration: BoxDecoration(

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,8 +11,10 @@ import 'package:mopedsafe/app/services/responsive_size.dart';
 import 'package:mopedsafe/app/services/text_style_util.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../../components/navigationAppButton.dart';
 import '../../../customwidgets/addplacebutton.dart';
 import '../../../customwidgets/savedLocationCard.dart';
+import '../../directioncard/views/directioncard_view.dart';
 import '../controllers/explore_controller.dart';
 
 class ExploreView extends GetView<ExploreController> {
@@ -44,58 +47,63 @@ class ExploreView extends GetView<ExploreController> {
             // Sliding Up Panel
             controller.savedLocations.value == null
                 ? CircularProgressIndicator()
-                : SlidingUpPanel(
-                    controller: controller.panelController,
-                    panelBuilder: (sc) => _panelContent(controller, context),
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(18.0)),
-                    minHeight: 150,
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
-                    body: Stack(
-                      children: [
-                        Obx(() {
-                          final position = controller.panelPosition.value;
-                          final offset = 400.0 -
-                              (position *
-                                  (MediaQuery.of(context).size.height * 0.35));
-                          return Positioned(
-                            top: offset,
-                            right: 15,
-                            child: Column(
-                              children: [
-                                _iconButton(
-                                  ImageConstant.svgmapStyleIcon,
-                                  controller.panelController,
-                                  Colors.white,
-                                ),
-                                const SizedBox(height: 10),
-                                _iconButton(
-                                  ImageConstant.svgLocation,
-                                  controller.panelController,
-                                  Colors.white,
-                                  onTap: () {
-                                    controller.globalController
-                                        .goToCurrentLocation(controller
-                                            .globalController.mapController!);
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                _iconButton(
-                                  ImageConstant.svgreportIcon,
-                                  controller.panelController,
-                                  Colors.red,
-                                  onTap: controller.toggleReportOptions,
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
+                : Obx(
+                    () => SlidingUpPanel(
+                      controller: controller.panelController,
+                      panelBuilder: (sc) => _panelContent(controller, context),
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(18.0)),
+                      minHeight: 150,
+                      maxHeight: MediaQuery.of(context).size.height * 0.5,
+                      panelSnapping: true,
+                      isDraggable: controller.isDraggable.value,
+                      body: Stack(
+                        children: [
+                          Obx(() {
+                            final position = controller.panelPosition.value;
+                            final offset = 400.0 -
+                                (position *
+                                    (MediaQuery.of(context).size.height *
+                                        0.35));
+                            return Positioned(
+                              top: offset,
+                              right: 15,
+                              child: Column(
+                                children: [
+                                  _iconButton(
+                                    ImageConstant.svgmapStyleIcon,
+                                    controller.panelController,
+                                    Colors.white,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _iconButton(
+                                    ImageConstant.svgLocation,
+                                    controller.panelController,
+                                    Colors.white,
+                                    onTap: () {
+                                      controller.globalController
+                                          .goToCurrentLocation(controller
+                                              .globalController.mapController!);
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _iconButton(
+                                    ImageConstant.svgreportIcon,
+                                    controller.panelController,
+                                    Colors.red,
+                                    onTap: controller.toggleReportOptions,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                      onPanelSlide: (position) {
+                        controller.panelPosition.value = position;
+                      },
                     ),
-                    onPanelSlide: (position) {
-                      controller.panelPosition.value = position;
-                    },
-                  ),
+                  )
           ],
         ),
       ),
@@ -105,51 +113,73 @@ class ExploreView extends GetView<ExploreController> {
 
   Widget _panelContent(ExploreController controller, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+      padding: EdgeInsets.all(15.kw),
       child: Obx(() {
         if (controller.showReportOptions.value) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              buildPanelHandle().paddingOnly(bottom: 18.kh),
+              Text(
                 'Add a report',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18.kh, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _reportButton(Icons.directions_car, 'Car crash', Colors.red),
-                  _reportButton(Icons.traffic, 'Congestion', Colors.red),
-                  _reportButton(Icons.construction, 'Roadwork', Colors.orange),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _reportButton(Icons.block, 'Road closed', Colors.orange),
-                  _reportButton(
-                      Icons.directions_bus, 'Vehicle stalled', Colors.orange),
-                  _reportButton(Icons.local_police, 'Police', Colors.orange),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple, // Background color
-                ),
-                onPressed: controller.toggleReportOptions,
-                child: const Text('Cancel'),
-              ),
+              GridView.count(crossAxisCount: 3, shrinkWrap: true, children: [
+                _reportButton(
+                    ImageConstant.svgcarcrashicon, 'Car crash', Colors.red,
+                    (index) {
+                  Get.toNamed(Routes.REPORTINCIDENT);
+                }, 0),
+                _reportButton(ImageConstant.svgcongestionIcon, 'Congestion',
+                    Colors.red, (index) {}, 1),
+                _reportButton(ImageConstant.svgroadworkIcon, 'Roadwork',
+                    Colors.orange, (index) {}, 2),
+                _reportButton(ImageConstant.svgroadclosedIcon, 'Road closed',
+                    Colors.orange, (index) {}, 3),
+                _reportButton(ImageConstant.svgvechilestalledIcon,
+                    'Vehicle stalled', Colors.orange, (index) {}, 4),
+                _reportButton(ImageConstant.svgpoliceIcon, 'Police',
+                    Colors.orange, (index) {}, 5),
+              ]),
+              NavigationAppButton(
+                label: 'Cancel',
+                onTap: controller.toggleReportOptions,
+                color: context.brandColor1,
+                textStyle: TextStyleUtil.poppins600(
+                    fontSize: 16.kh, color: Colors.white),
+                leadinglabelpadding: EdgeInsets.symmetric(vertical: 12.kh),
+                borderRadius: BorderRadius.circular(48.kw),
+              )
             ],
           );
         } else {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const buildPanelHandle().paddingOnly(bottom: 18.kh),
               CustomTextField(
                 enabled: false,
+                color: context.neutralGrey,
+                decoration: InputDecoration(
+                  hintText: 'Enter your destination..',
+                  disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: context.lightGrey),
+                      borderRadius: BorderRadius.circular(8.kw)),
+                  hintStyle: TextStyleUtil.poppins400(
+                      fontSize: 14.kh, color: context.darkGrey),
+                  contentPadding: EdgeInsets.only(top: 14.kh),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(8.kw)),
+                  prefixIcon: Icon(
+                    CupertinoIcons.search,
+                    color: context.darkGrey,
+                  ),
+                  suffixIcon: Icon(
+                    CupertinoIcons.mic,
+                    color: context.darkGrey,
+                  ),
+                ),
                 onGestureTap: () {
                   Get.toNamed(Routes.SEARCHVIEW);
                 },
@@ -162,7 +192,10 @@ class ExploreView extends GetView<ExploreController> {
                         fontSize: 14.kh,
                       )),
                   TextButton(
-                      onPressed: () async {}, child: const Text('See All')),
+                      onPressed: () async {
+                        Get.toNamed(Routes.SAVED);
+                      },
+                      child: const Text('See All')),
                 ],
               ),
               Expanded(
@@ -178,13 +211,45 @@ class ExploreView extends GetView<ExploreController> {
                         controller
                             .savedLocations.value!.data!.results!.length) {
                       // Return the "Add" button at the end
-                      return AddButton();
+                      return const AddButton();
                     } else {
                       // Return the saved location cards
-                      return savedLocationCard(
-                          svgPath: ImageConstant.svghomeIcon,
-                          name: controller.savedLocations!.value!.data!
-                              .results![index]!.title);
+                      return GestureDetector(
+                        onTap: () {
+                          controller.fetchPlaceDetails(
+                              destinationlatitude: controller
+                                  .savedLocations
+                                  .value!
+                                  .data!
+                                  .results![index]!
+                                  .location!
+                                  .coordinates![0]!
+                                  .toString(),
+                              destinationlongitude: controller
+                                  .savedLocations
+                                  .value!
+                                  .data!
+                                  .results![index]!
+                                  .location!
+                                  .coordinates![1]!
+                                  .toString(),
+                              placeId: controller.savedLocations.value!.data!
+                                  .results![index]!.placeId
+                                  .toString());
+                        },
+                        child: savedLocationCard(
+                            svgPath: controller.savedLocations.value!.data!
+                                        .results![index]!.title ==
+                                    'Home'
+                                ? ImageConstant.svghomeIcon
+                                : controller.savedLocations.value!.data!
+                                            .results![index]!.title ==
+                                        'Office'
+                                    ? ImageConstant.svgofficeIcon
+                                    : ImageConstant.svgsavedIconsblack,
+                            name: controller.savedLocations!.value!.data!
+                                .results![index]!.title),
+                      );
                     }
                   },
                 ),
@@ -195,21 +260,77 @@ class ExploreView extends GetView<ExploreController> {
                       fontSize: 14.kh,
                     )),
                 TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.toNamed(Routes.SEARCHVIEW);
+                    },
                     child: Text(
                       'See All',
                       style: TextStyleUtil.poppins400(
                           fontSize: 12.kh, color: context.brandColor1),
                     )),
-              ]),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: 2,
-                itemBuilder: (BuildContext context, int index) {
-                  final location = controller.recentLocations[index];
-                  return recentLocationList(location, context);
-                },
-              ),
+              ]).paddingOnly(bottom: 10.kh),
+              Obx(() => controller.searchLocations.value == null ||
+                      controller.searchLocations.value!.data!.results!.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No recent search history',
+                        style: TextStyleUtil.poppins400(fontSize: 14.kh),
+                      ),
+                    )
+                  : Expanded(
+                      child: ListView.builder(
+                        itemCount: 2,
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          final recentSearch = controller
+                              .searchLocations.value!.data!.results![index];
+                          return GestureDetector(
+                            onTap: () {
+                              controller.fetchPlaceDetails(
+                                  destinationlatitude: controller
+                                      .searchLocations
+                                      .value!
+                                      .data!
+                                      .results![index]!
+                                      .location!
+                                      .coordinates![0]!
+                                      .toString(),
+                                  destinationlongitude: controller
+                                      .searchLocations
+                                      .value!
+                                      .data!
+                                      .results![index]!
+                                      .location!
+                                      .coordinates![1]!
+                                      .toString(),
+                                  placeId: controller.searchLocations.value!
+                                      .data!.results![index]!.placeId
+                                      .toString());
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.history),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        recentSearch!.location!.addressLine
+                                            .toString(),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    )),
             ],
           );
         }
@@ -217,17 +338,31 @@ class ExploreView extends GetView<ExploreController> {
     );
   }
 
-  Widget _reportButton(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: color.withOpacity(0.1),
-          child: Icon(icon, size: 30, color: color),
-        ),
-        SizedBox(height: 5.kh),
-        Text(label, style: TextStyle(color: color)),
-      ],
+  Widget _reportButton(String icon, String label, Color color,
+      void Function(int)? onTap, int index) {
+    return GestureDetector(
+      onTap: () {
+        if (onTap != null) {
+          onTap(index); // Pass the index when tapped
+          print(index);
+        }
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 25.kw,
+            backgroundColor: color,
+            child: CommonImageView(
+              svgPath: icon,
+              height: 25.kh,
+              width: 25.kw,
+              svgColor: Colors.white,
+            ),
+          ),
+          SizedBox(height: 15.kh),
+          Text(label, style: TextStyleUtil.poppins400(fontSize: 12.kh)),
+        ],
+      ),
     );
   }
 

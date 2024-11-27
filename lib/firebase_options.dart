@@ -44,41 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBM7Zhw0ZyCAGgRss880QfXMd-MNRiNZyw',
-    appId: '1:4063681274:web:91efd2c60dbd69521d8743',
-    messagingSenderId: '4063681274',
-    projectId: 'iumopedsafe',
-    authDomain: 'iumopedsafe.firebaseapp.com',
-    databaseURL: 'https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'iumopedsafe.appspot.com',
+    apiKey: 'AIzaSyC4f44oJo3SsKMGlSJnICjCQ_1JCJRbkhE',
+    appId: '1:734724432257:web:0f54ae235b1f91760d0880',
+    messagingSenderId: '734724432257',
+    projectId: 'mopedgps-e5c51',
+    authDomain: 'mopedgps-e5c51.firebaseapp.com',
+    storageBucket: 'mopedgps-e5c51.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCYwR0wbJ8B83zic7rDYBsO2eLSNnfPMIY',
-    appId: '1:4063681274:android:8b4670fe5fbe06f81d8743',
-    messagingSenderId: '4063681274',
-    projectId: 'iumopedsafe',
-    databaseURL: 'https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'iumopedsafe.appspot.com',
+    apiKey: 'AIzaSyA6asitgM8tbYW0r3QaiLtcYgDvpplkA_E',
+    appId: '1:734724432257:android:aabc861ab18de3ea0d0880',
+    messagingSenderId: '734724432257',
+    projectId: 'mopedgps-e5c51',
+    storageBucket: 'mopedgps-e5c51.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCnaPcTEGrZ4nk44Otu4yqGniNgU3zXTdo',
-    appId: '1:4063681274:ios:872da963098683dd1d8743',
-    messagingSenderId: '4063681274',
-    projectId: 'iumopedsafe',
-    databaseURL: 'https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'iumopedsafe.appspot.com',
+    apiKey: 'AIzaSyDqjdtoQ89o8LYuIhf8eaQttMikWQeJkY8',
+    appId: '1:734724432257:ios:621666904d6fa1ba0d0880',
+    messagingSenderId: '734724432257',
+    projectId: 'mopedgps-e5c51',
+    storageBucket: 'mopedgps-e5c51.firebasestorage.app',
     iosBundleId: 'iu.mopedsafe.com.mopedsafe',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCnaPcTEGrZ4nk44Otu4yqGniNgU3zXTdo',
-    appId: '1:4063681274:ios:6507127823f19ef51d8743',
-    messagingSenderId: '4063681274',
-    projectId: 'iumopedsafe',
-    databaseURL: 'https://iumopedsafe-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'iumopedsafe.appspot.com',
+    apiKey: 'AIzaSyDqjdtoQ89o8LYuIhf8eaQttMikWQeJkY8',
+    appId: '1:734724432257:ios:d5ac4d659bc269e50d0880',
+    messagingSenderId: '734724432257',
+    projectId: 'mopedgps-e5c51',
+    storageBucket: 'mopedgps-e5c51.firebasestorage.app',
     iosBundleId: 'iu.mopedsafe.com.mopedsafe.RunnerTests',
   );
 }

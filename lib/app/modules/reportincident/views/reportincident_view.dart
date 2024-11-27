@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:mopedsafe/app/components/customappbar.dart';
+import 'package:mopedsafe/app/customwidgets/buildLocationInputField.dart';
 import 'package:mopedsafe/app/services/colors.dart';
 import 'package:mopedsafe/app/services/responsive_size.dart';
 
@@ -16,11 +18,11 @@ class ReportincidentView extends GetView<ReportincidentController> {
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
-    String incidentType = '';
     String location = '123 Street, Las Vegas, Nevada';
     String details = '';
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Report Incident',
       ),
@@ -45,14 +47,20 @@ class ReportincidentView extends GetView<ReportincidentController> {
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 16),
                   ),
-                  items: ['Theft', 'Vandalism', 'Accident', 'Other']
+                  items: controller.incidentTypes
                       .map((incident) => DropdownMenuItem<String>(
-                            value: incident,
-                            child: Text(incident),
+                            value: incident['type'] as String,
+                            child: Row(
+                              children: [
+                                Icon(incident['icon'] as IconData, size: 20),
+                                const SizedBox(width: 8),
+                                Text(incident['type'] as String),
+                              ],
+                            ),
                           ))
                       .toList(),
                   onChanged: (value) {
-                    incidentType = value!;
+                    controller.selectedIncidentType.value = value!;
                   },
                   validator: (value) =>
                       value == null ? 'Please select an incident type' : null,
@@ -64,27 +72,44 @@ class ReportincidentView extends GetView<ReportincidentController> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                TextFormField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 16),
-                    suffixIcon: const Icon(Icons.mic),
-                  ),
-                  initialValue: location,
-                  onChanged: (value) {
-                    location = value;
+                buildLocationInputField(
+                  controller: controller.searchcontroller,
+                  itemClick: (Prediction) {
+                    // controller.selectedLocation.value =
+                    //     Prediction.description!.toString();
+                    // controller.searchcontroller.text = Prediction.description!;
                   },
+                  context: context,
+                  focusNode: FocusNode(),
+                  inputDecoration: InputDecoration(
+                      hintText: 'Enter Your Destination',
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(color: context.darkGrey),
+                          borderRadius: BorderRadius.circular(12.kw))),
+                  color: Colors.white,
+                  textColor: context.darkGrey,
                 ),
                 const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () {
-                    // Handle use current location action
-                  },
-                  icon: const Icon(Icons.my_location),
-                  label: const Text('Use Current Location'),
+                Obx(
+                  () => controller.isLoading.value
+                      ? Center(
+                          child: Column(
+                            children: [
+                              Text('Fetching Your Current Location...'),
+                              SpinKitThreeBounce(
+                                color: context.brandColor1,
+                                size: 20.kh,
+                              ),
+                            ],
+                          ),
+                        )
+                      : TextButton.icon(
+                          onPressed: () {
+                            controller.getCurrentLocation();
+                          },
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Use Current Location'),
+                        ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -129,29 +154,24 @@ class ReportincidentView extends GetView<ReportincidentController> {
                 NavigationAppButton(
                   label: 'Submit',
                   onTap: () {
-                    controller.postCreatePost(
-                        typeOfIncident: 'Car crash',
+                    if (formKey.currentState!.validate()) {
+                      final profileImageKey =
+                          controller.profileimage.value?.files?[0]?.key;
+                      final profileImageUrl =
+                          controller.profileimage.value?.files?[0]?.url;
+
+                      controller.postCreatePost(
+                        typeOfIncident: controller.selectedIncidentType.value,
                         latitude: 40.712776,
                         longitude: -74.005974,
                         type: "Point",
-                        addressLine: "123 Main St, New York, NY 10001",
+                        addressLine: controller.selectedLocation.value,
                         description: controller.descriptioncontroller.text,
-                        key: controller.profileimage.value!.files![0]!.key
-                            .toString(),
-                        url: controller.profileimage.value!.files![0]!.url
-                            .toString());
-                    if (formKey.currentState!.validate()) {
-                      // final newReport = IncidentReport(
-                      //   type: incidentType,
-                      //   location: location,
-                      //   dummyname: 'dummyname',
-                      //   details: details,
-                      //   imagePath: controller.imageFile.value?.path ?? '',
-                      //   time: DateTime.now(),
-                      // );
-                      // controller.addIncidentReport(newReport);
-
-                      // Get.offNamed(Routes.COMMUNITY);
+                        key: profileImageKey ??
+                            '', // Provide an empty string if no image
+                        url: profileImageUrl ??
+                            '', // Provide an empty string if no image
+                      );
                     }
                   },
                   color: context.brandColor1,

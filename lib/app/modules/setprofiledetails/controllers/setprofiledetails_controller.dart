@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,6 +18,23 @@ class SetprofiledetailsController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   var selectedImage = Rx<File?>(null);
   var loading = false.obs; // Add this line
+  RxString selectedSpeedLimit = 'Max Speed 25kmph'.obs;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> sendEmailVerification() async {
+    try {
+      User? user = _auth.currentUser;
+      print(user);
+      if (user != null && !user.emailVerified) {
+        await user.verifyBeforeUpdateEmail(emailController.text);
+        Get.snackbar('Verification Email Sent', 'Please check your inbox.');
+      } else {
+        Get.snackbar('Already Verified', 'This email is already verified.');
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
 
   Future<void> pickImage() async {
     final pickedFile =
@@ -76,6 +94,7 @@ class SetprofiledetailsController extends GetxController {
 
   Future<void> signUpApi({
     required String name,
+    required String maxSpeed,
     required String email,
     required String dob,
     String? key,
@@ -93,6 +112,7 @@ class SetprofiledetailsController extends GetxController {
         key: key,
         url: url,
         isEmailVerified: isEmailVerified,
+        maxSpeed: maxSpeed,
       ).then((value) {
         Get.snackbar(
           'Success',

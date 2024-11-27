@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mopedsafe/app/components/common_image_view.dart';
-import 'package:mopedsafe/app/components/customappbar.dart';
 import 'package:mopedsafe/app/constants/image_constant.dart';
 import 'package:mopedsafe/app/routes/app_pages.dart';
 import 'package:mopedsafe/app/services/colors.dart';
@@ -21,18 +20,24 @@ class ProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     Get.lazyPut(() => UserService());
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Profile'),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: Container(),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              buildProfileInfo(
-                  context,
-                  controller,
-                  (ctrl) => ctrl.userDetails.value?.name ?? '',
-                  (ctrl) => ctrl.userDetails.value?.email ?? '',
-                  (ctrl) => ctrl.userDetails.value?.profilePic?.url ?? ''),
+              Obx(
+                () => buildProfileInfo(
+                    context,
+                    controller,
+                    (ctrl) => ctrl.userDetails.value?.name ?? '',
+                    (ctrl) => ctrl.userDetails.value?.email ?? '',
+                    (ctrl) => ctrl.userDetails.value?.profilePic?.url ?? ''),
+              ),
               SizedBox(height: 16.kh),
               Text('Moped GPS+',
                       style: TextStyleUtil.poppins500(

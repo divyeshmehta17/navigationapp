@@ -75,6 +75,7 @@ class postSaveLocationData {
   postSaveLocationDataLocation? location;
   String? Id;
   String? createdAt;
+  String? placeId;
   String? updatedAt;
   int? v;
 
@@ -85,11 +86,13 @@ class postSaveLocationData {
     this.location,
     this.Id,
     this.createdAt,
+    this.placeId,
     this.updatedAt,
     this.v,
   });
   postSaveLocationData.fromJson(Map<String, dynamic> json) {
     user = json['user']?.toString();
+    placeId = json['placeId']?.toString();
     type = json['type']?.toString();
     title = json['title']?.toString();
     location = (json['location'] != null)
@@ -103,6 +106,7 @@ class postSaveLocationData {
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     data['user'] = user;
+    data['placeId'] = placeId;
     data['type'] = type;
     data['title'] = title;
     if (location != null) {

@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart' as google_maps_places;
+import 'package:mopedsafe/app/modules/explore/controllers/explore_controller.dart';
 import 'package:mopedsafe/app/services/dio/api_service.dart';
 import 'package:mopedsafe/app/services/storage.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -45,12 +46,16 @@ class DirectioncardController extends GetxController {
   late final GoogleMapController? mapController;
   late final StreamSubscription<Position>? positionStreamSubscription;
   final google_maps_places.GoogleMapsPlaces _places;
-
-  LatLng currentPosition = const LatLng(0, 0);
-
-  final getroutes = Get.arguments['getroutes'];
-  final placeID = Get.arguments['placeID'];
-
+  Rxn<GetRoutes> getnewroutes = Rxn<GetRoutes>();
+  Rx<LatLng> newcurrentPosition = LatLng(0, 0).obs;
+  Rx<LatLng> newdestinationPosition = LatLng(0, 0).obs;
+  Rx<CameraPosition> currentCameraPosition = const CameraPosition(
+    target: LatLng(0, 0),
+    zoom: 7,
+  ).obs;
+  dynamic getroutes;
+  dynamic placeID;
+  final previousRoute = Get.previousRoute;
   DirectioncardController()
       : _places = google_maps_places.GoogleMapsPlaces(
           apiKey: Get.find<GetStorageService>().googleApiKey,
@@ -59,18 +64,148 @@ class DirectioncardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    print('initiiiiiiiiiiiii');
     _loadCustomChevronIcon();
-    decodePolyline();
-    fetchPlaceDetails(placeID);
-    updateMap();
-    fetchCurrentLocationPlaceName();
-    fetchSavedRoutes();
-    currentPosition = LatLng(globalController.currentLatitude.value,
-        globalController.currentLongitude.value);
+    print('ffffff ${previousRoute}');
+    // Based on the previous route, set getroutes accordingly
+    if (previousRoute == '/searchview') {
+      getroutes = Get.arguments['searchedRoutes'];
+      placeID = Get.arguments['searchedPlaceId'];
+      decodePolyline();
+      fetchPlaceDetails(placeID);
+      updateMap();
+      fetchCurrentLocationPlaceName();
+      fetchSavedRoutes();
+      newcurrentPosition.value = LatLng(globalController.currentLatitude.value,
+          globalController.currentLongitude.value);
+      print('Previous Route: }');
+      //  print(Get.find<SearchviewController>().getroutes.value!.data);
+    } else if (previousRoute == '/customnavigationbar') {
+      print('else loop');
+      getroutes = Get.arguments['recentRoutes'];
+      placeID = Get.arguments['recentPlaceId'];
+      decodePolyline();
+      fetchPlaceDetails(placeID);
+      updateMap();
+      fetchCurrentLocationPlaceName();
+      fetchSavedRoutes();
+      newcurrentPosition.value = LatLng(globalController.currentLatitude.value,
+          globalController.currentLongitude.value);
+      print(Get.find<ExploreController>().getroutes.value!.data);
+    }
+
+    // Continue with other initialization logic
+
+    // getroutes = Get.arguments['getroutes'];
+    // placeID = Get.arguments['placeID'];
   }
 
-  void toggleGetDirection() {
-    showLocationOptions.value = !showLocationOptions.value;
+  @override
+  void onClose() {
+    print('DirectioncardController is being closed');
+
+    // Check if positionStreamSubscription is not null before cancelling
+    positionStreamSubscription?.cancel();
+    getroutes = null;
+    placeID = null;
+    // Dispose of the mapController safely
+    mapController?.dispose();
+
+    // Clear the controllers
+    currentLocationController.clear();
+    destinationLocationController.clear();
+
+    super.onClose();
+  }
+
+  void onSourceLocationChanged(LatLng newLocation) async {
+    // Update currentPosition with the new location
+    newcurrentPosition.value = newLocation;
+
+    // Update the camera position on the map to center the new location
+    currentCameraPosition.value =
+        CameraPosition(target: newcurrentPosition.value, zoom: 13);
+
+    // Clear existing polyline coordinates and redraw them
+    polylineCoordinates.clear();
+
+    // Fetch new polylines from the new current location to the destination
+    await getNewPolylines();
+    addSourceLocationMarker(newLocation);
+  }
+
+  void onDestinationLocationChanged(LatLng newLocation) async {
+    // Update the destination position with the new location
+    newdestinationPosition.value = newLocation;
+
+    // Add a new destination marker for the updated location
+
+    // Update the camera position on the map to center the new location
+    currentCameraPosition.value = CameraPosition(target: newLocation, zoom: 13);
+
+    // Clear existing polyline coordinates and redraw them
+    polylineCoordinates.clear();
+
+    // Fetch new polylines from the current source location to the new destination
+    await getNewPolylines();
+    addDestinationLocationMarker(newLocation);
+  }
+
+  void addSourceLocationMarker(LatLng sourceLocation) {
+    markers.clear();
+    markers.add(Marker(
+      markerId: const MarkerId('source_location'),
+      position: sourceLocation,
+      infoWindow: const InfoWindow(title: 'Source Location'),
+      icon: userLocationIcon ??
+          BitmapDescriptor.defaultMarker, // Use custom icon if available
+    ));
+    markers.add(Marker(
+      markerId: const MarkerId('end'),
+      position: endPoint.value!,
+      infoWindow: const InfoWindow(title: 'End Point'),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    ));
+  }
+
+  void addDestinationLocationMarker(LatLng destinationLocation) {
+    markers.clear();
+    markers.add(Marker(
+      markerId: const MarkerId('source_location'),
+      position: startPoint.value!,
+      infoWindow: const InfoWindow(title: 'Source Location'),
+      icon: userLocationIcon ??
+          BitmapDescriptor.defaultMarker, // Use custom icon if available
+    ));
+    markers.add(Marker(
+      markerId: const MarkerId('end'),
+      position: destinationLocation,
+      infoWindow: const InfoWindow(title: 'End Point'),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    ));
+  }
+
+  Future<void> getNewPolylines() async {
+    clearPlaceDetails();
+    await APIManager.postGetRoutes(
+            sourcelatitude: newcurrentPosition.value.latitude.toString(),
+            sourcelongitude: newcurrentPosition.value.longitude.toString(),
+            destinationlatitude:
+                newdestinationPosition.value.latitude.toString(),
+            destinationlongitude:
+                newdestinationPosition.value.longitude.toString())
+        .then((value) {
+      getnewroutes.value = GetRoutes.fromJson(value.data);
+      // Decode the new polyline points
+      final points = PolylinePoints()
+          .decodePolyline(getnewroutes.value!.data!.points.toString());
+      polylineCoordinates.value = points
+          .map((point) => LatLng(point.latitude, point.longitude))
+          .toList();
+
+      // Call updateMap() to refresh the display
+      updateMap();
+    });
   }
 
   Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
@@ -92,6 +227,7 @@ class DirectioncardController extends GetxController {
       required String endName,
       String? placeId,
       required List<GetRoutesDataInstructions> instructions}) async {
+    print(getroutes.data!.points);
     APIManager.postSaveRoutes(
             points: points,
             time: time,
@@ -105,6 +241,19 @@ class DirectioncardController extends GetxController {
       savedRoutes.value = SaveRoutes.fromJson(value.data);
       print('saved time ${savedRoutes.value!.data!.time}');
     });
+  }
+
+  void clearPlaceDetails() {
+    print('clearing details ...........');
+    //currentPlaceName.value = '';
+    // placeRating.value = 0.0;
+    // country.value = '';
+    // openNow.value = '';
+    // closingTime.value = '';
+    // placeImages.clear();
+    polylineCoordinates.clear(); // Clear previous polyline points
+    markers.clear(); // Clear previous markers
+    polylines.clear(); // Clear previous polylines
   }
 
   Future<void> fetchPlaceDetails(String placeId) async {
@@ -134,8 +283,27 @@ class DirectioncardController extends GetxController {
   }
 
   void decodePolyline() {
-    final savedpoints = Get.arguments['points'];
-    final points = PolylinePoints().decodePolyline(savedpoints);
+    // clearPlaceDetails();
+    RxString encodedString = ''.obs;
+    print(previousRoute);
+    if (previousRoute == '/customnavigationbar') {
+      encodedString.value = Get.find<ExploreController>()
+          .getroutes
+          .value!
+          .data!
+          .points
+          .toString();
+      placeID = Get.find<ExploreController>().placeDetails!.placeId;
+      print('nav $placeID');
+    } else if (previousRoute == '/directioncard') {
+      print(previousRoute);
+      encodedString.value =
+          Get.find<ExploreController>().getroutes.value!.data!.points!;
+      placeID = Get.find<ExploreController>().placeDetails!.placeId;
+      print(
+          'searchview ${Get.find<ExploreController>().getroutes.value!.data!.points!}');
+    }
+    final points = PolylinePoints().decodePolyline(encodedString.value);
     polylineCoordinates.value =
         points.map((point) => LatLng(point.latitude, point.longitude)).toList();
 
@@ -144,7 +312,6 @@ class DirectioncardController extends GetxController {
       endPoint.value = polylineCoordinates.last;
       fetchAndDisplayDirections(polylineCoordinates);
     }
-    print('points ${getroutes.data!.points}');
   }
 
   Future<void> fetchSavedRoutes() async {
@@ -268,16 +435,5 @@ class DirectioncardController extends GetxController {
     } catch (e) {
       print("Error fetching place name: $e");
     }
-  }
-
-  Rx<CameraPosition> currentCameraPosition = CameraPosition(
-    target: LatLng(0, 0), // Initial default position
-    zoom: 7,
-  ).obs;
-  @override
-  void onClose() {
-    positionStreamSubscription?.cancel();
-    mapController?.dispose();
-    super.onClose();
   }
 }
