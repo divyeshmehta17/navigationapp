@@ -8,7 +8,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mopedsafe/app/constants/image_constant.dart';
 import 'package:mopedsafe/app/services/dio/api_service.dart';
 import 'package:mopedsafe/app/services/storage.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
@@ -17,8 +16,6 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../customwidgets/globalcontroller.dart';
 import '../../../models/googledirectionapiresponse.dart';
-import '../../explore/controllers/explore_controller.dart';
-import '../../searchview/controllers/searchview_controller.dart';
 
 class RealtimenavigationController extends GetxController {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
@@ -77,15 +74,6 @@ class RealtimenavigationController extends GetxController {
     final previousRoute = Get.previousRoute;
     print('Previous Route: $previousRoute');
 
-    // Based on the previous route, set getroutes accordingly
-    if (previousRoute == '/customnavigationbar') {
-      getroutes = Get.find<ExploreController>().getroutes.value!.data;
-    } else if (previousRoute == '/searchview') {
-      getroutes = Get.find<SearchviewController>().getroutes.value!.data;
-    } else {
-      // Default logic, if needed
-      getroutes = null;
-    }
     if (Get.arguments['sessionId'] != null) {
       sessionId = Get.arguments['sessionId'];
     } else {
@@ -109,7 +97,8 @@ class RealtimenavigationController extends GetxController {
 
   void startPeriodicLocationUpdates() {
     if (sessionId != null) {
-      locationUpdateTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      locationUpdateTimer =
+          Timer.periodic(const Duration(seconds: 5), (timer) async {
         await _updateLocation();
       });
     }
@@ -129,11 +118,11 @@ class RealtimenavigationController extends GetxController {
     return "$hour:$minute $period";
   }
 
-  void _loadCustomChevronIcon() async {
-    userLocationIcon =
-        await _getBitmapDescriptorFromAsset(ImageConstant.pngnavigation);
-    updateMap(); // Update the map with the new marker once loaded
-  }
+  // void _loadCustomChevronIcon() async {
+  //   userLocationIcon =
+  //       await _getBitmapDescriptorFromAsset(ImageConstant.pngnavigation);
+  //   updateMap(); // Update the map with the new marker once loaded
+  // }
 
   // void startTrackingPosition() {
   //   positionStreamSubscription =
@@ -216,15 +205,15 @@ class RealtimenavigationController extends GetxController {
     }
   }
 
-  Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
-      String assetPath) async {
-    final Completer<BitmapDescriptor> bitmapDescriptor = Completer();
-    const ImageConfiguration config = ImageConfiguration(devicePixelRatio: 2.5);
-    BitmapDescriptor.asset(config, assetPath).then((icon) {
-      bitmapDescriptor.complete(icon);
-    });
-    return bitmapDescriptor.future;
-  }
+  // Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
+  //     String assetPath) async {
+  //   final Completer<BitmapDescriptor> bitmapDescriptor = Completer();
+  //   const ImageConfiguration config = ImageConfiguration(devicePixelRatio: 2.5);
+  //   BitmapDescriptor.asset(config, assetPath).then((icon) {
+  //     bitmapDescriptor.complete(icon);
+  //   });
+  //   return bitmapDescriptor.future;
+  // }
 
 // This function ensures the camera moves smoothly over time
   void _smoothCameraTransition(LatLng newPosition) {
@@ -278,11 +267,11 @@ class RealtimenavigationController extends GetxController {
   // }
 
   Future<void> decodePolyline() async {
-    List<PointLatLng> points = PolylinePoints().decodePolyline(
-        Get.find<ExploreController>().getroutes.value!.data!.points.toString());
+    List<PointLatLng> points = PolylinePoints()
+        .decodePolyline(globalController.directionCardData.value!.points);
     polylineCoordinates.value =
         points.map((point) => LatLng(point.latitude, point.longitude)).toList();
-    await fetchAndDisplayDirections(polylineCoordinates);
+    fetchAndDisplayDirections(polylineCoordinates);
     if (polylineCoordinates.isNotEmpty) {
       startPoint.value = polylineCoordinates.first;
       endPoint.value = polylineCoordinates.last;
@@ -290,31 +279,45 @@ class RealtimenavigationController extends GetxController {
   }
 
   Future<void> fetchAndDisplayDirections(List<LatLng> waypoints) async {
+    print('fetchAndDisplayDirections $waypoints');
     try {
+      print('lllllllllllllllll');
       Map<String, dynamic> directions = await getDirections(waypoints);
       parseDirections(directions);
 
       // Reset total distance
-      totalDistance.value = 0.0;
-
-      // Check if the response contains routes
+      totalDurationInSeconds.value = 0.0; // Reset before recalculating duration
       if (googledirectionApiResponse.value?.routes != null) {
         for (var route in googledirectionApiResponse.value!.routes!) {
-          if (route.legs != null) {
-            for (var leg in route.legs!) {
-              // Accumulate leg distance (in meters) and convert to kilometers
-              if (leg?.distance != null) {
-                totalDistance.value += leg!.distance!.value!.toDouble() / 1000;
+          for (var leg in route.legs!) {
+            for (var step in leg!.steps!) {
+              if (step?.duration != null && step?.duration?.value != null) {
+                totalDurationInSeconds.value +=
+                    step!.duration!.value!.toDouble();
               }
             }
           }
         }
+
+        // Now format the total duration and print it
+        String formattedDuration =
+            formatTotalDuration(totalDurationInSeconds.value);
+        print('Total Duration: $formattedDuration');
       }
 
       print('Corrected total distance: ${totalDistance.value} km');
     } catch (e) {
       print('Error fetching directions: $e');
     }
+  }
+
+  String formatTotalDuration(double totalSeconds) {
+    int hours = (totalSeconds / 3600).floor(); // Convert total seconds to hours
+    int minutes =
+        ((totalSeconds % 3600) / 60).floor(); // Convert remainder to minutes
+    int seconds = (totalSeconds % 60).floor(); // Remaining seconds
+
+    return '${hours}h ${minutes}m '; // Format as 'Xh Xm Xs'
   }
 
   Future<Map<String, dynamic>> getDirections(List<LatLng> waypoints) async {
@@ -332,13 +335,13 @@ class RealtimenavigationController extends GetxController {
       googleApiKey: Get.find<GetStorageService>().googleApiKey,
     );
 
+    print('Response from API: ${response.data}'); // Log the entire response
+
     googledirectionApiResponse.value =
         GoogleDIrectionApiResponse.fromJson(response.data);
-    print(
-        'polylines ${googledirectionApiResponse.value!.routes![0].legs![0]!.steps![0]!.distance!.text}');
 
     // Safely sum up durations
-
+    totalDistance.value = globalController.directionCardData.value!.distance!;
     if (googledirectionApiResponse.value?.routes != null) {
       for (var route in googledirectionApiResponse.value!.routes!) {
         for (var leg in route!.legs!) {
@@ -346,7 +349,8 @@ class RealtimenavigationController extends GetxController {
             totalDurationInSeconds.value += step!.duration!.value!.toDouble();
             totalduration.value = totalDurationInSeconds.value / 60;
           }
-          print('totalssss $totalduration');
+          print(
+              'totalssss ${googledirectionApiResponse.value?.routes![0]!.legs![0]!.steps![0]!.htmlInstructions}');
         }
       }
     }

@@ -5,6 +5,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../components/SavedLocationData.dart';
 import '../../../customwidgets/globalcontroller.dart';
+import '../../../models/directioncarddata.dart';
 import '../../../models/locationHistory.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../routes/app_pages.dart';
@@ -33,8 +34,6 @@ class ExploreController extends GetxController {
   Future<void> getSavedLocation() async {
     APIManager.getSavedLocation(type: 'SAVED').then((response) {
       savedLocations.value = SavedLocation.fromJson(response.data);
-      print(savedLocations.value!.data!.results![0]!.location!.coordinates![0]);
-      print(savedLocations.value!.data!.results![0]!.location!.coordinates![1]);
     });
   }
 
@@ -55,16 +54,42 @@ class ExploreController extends GetxController {
         .then((value) {
       getroutes.value = GetRoutes.fromJson(value.data);
       print(getroutes.value!.data!.points);
+      if (getroutes.value != null) {
+        // Find the first non-empty streetName
+        String firstNonEmptyStreetName = getroutes.value!.data!.instructions!
+                .firstWhere(
+                  (instruction) => instruction?.streetName!.isNotEmpty ?? false,
+                )
+                ?.streetName ??
+            'Unknown Street';
 
-      // Manually delete the DirectioncardController if it exists
-      if (Get.isRegistered<DirectioncardController>()) {
-        Get.delete<DirectioncardController>();
+        // Convert GetRoutes data into DirectioncardData
+        final routeData = DirectioncardData(
+          points: getroutes.value!.data!.points!,
+          name: firstNonEmptyStreetName,
+          rating: 3.0,
+          status: 'test',
+          closingTime: 'test',
+          location: 'test',
+          imageUrls: [],
+          placeID: placeDetails?.placeId ?? '',
+          distance: getroutes.value!.data!.distance! / 1000,
+          instructions: [],
+        );
+
+        // Save the route data for use in the Directioncard screen
+        globalController.directionCardData.value = routeData;
+
+        // Navigate to the Directioncard screen
+        if (Get.isRegistered<DirectioncardController>()) {
+          Get.delete<DirectioncardController>();
+        }
+        Get.toNamed(
+          Routes.DIRECTIONCARD,
+        );
+      } else {
+        print('Error: No routes data found.');
       }
-
-      Get.toNamed(Routes.DIRECTIONCARD, arguments: {
-        'recentRoutes': getroutes.value,
-        'recentPlaceId': placeDetails!.placeId,
-      });
     });
   }
 
@@ -90,7 +115,10 @@ class ExploreController extends GetxController {
   }
 
   @override
-  void onReady() {}
+  void onReady() {
+    getSavedLocation();
+    getHistoryLocation();
+  }
 
   void toggleReportOptions() {
     showReportOptions.value = !showReportOptions.value;

@@ -167,6 +167,7 @@ class ProfileView extends GetView<ProfileController> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
+                  print(controller.userDetails.value!.profilePic!.url);
                   showGlobalDialog(
                     context: context,
                     title: 'Leaving too soon?',

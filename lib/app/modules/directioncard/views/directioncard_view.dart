@@ -51,7 +51,7 @@ class DirectioncardView extends GetView<DirectioncardController> {
             SlidingUpPanelWidget(
               panelController: controller.panelController,
               minHeight: 100.0,
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
+              maxHeight: MediaQuery.of(context).size.height * 0.5,
               panelContentBuilder: (context) => _panelContent(context),
             ),
           ],
@@ -62,9 +62,90 @@ class DirectioncardView extends GetView<DirectioncardController> {
 
   Widget _panelContent(BuildContext context) {
     return Obx(
-      () => controller.showLocationOptions.value
-          ? _buildLocationOptions(context)
-          : _buildPlaceDetails(context),
+      () => controller.showShareOptions.value
+          ? _buildShareOptions(context)
+          : controller.showLocationOptions.value
+              ? _buildLocationOptions(context)
+              : _buildPlaceDetails(context),
+    ).paddingOnly(top: 18.kh);
+  }
+
+  Widget _buildShareOptions(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const buildPanelHandle(),
+              Row(
+                children: [
+                  Icon(Icons.add_location_outlined),
+                  Text(
+                    'Add Stop',
+                    style: TextStyleUtil.poppins500(fontSize: 14.kh),
+                  )
+                ],
+              ),
+              Divider(
+                color: context.lightGrey,
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.share_outlined),
+                  Text(
+                    'Share',
+                    style: TextStyleUtil.poppins500(fontSize: 14.kh),
+                  )
+                ],
+              ),
+              Divider(
+                color: context.lightGrey,
+              ),
+              GestureDetector(
+                onTap: () {
+                  controller.postSaveRoute(
+                      points: controller
+                          .globalController.directionCardData.value!.points,
+                      type: 'OFFLINE',
+                      placeId: controller
+                          .globalController.directionCardData.value!.placeID,
+                      time: 0,
+                      distance: controller
+                          .globalController.directionCardData.value!.distance,
+                      instructions:
+                          controller.googledirectionApiResponse.value!.routes!,
+                      startName: controller.currentPlaceName.value,
+                      endName: controller.placeName.value);
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.save),
+                    Text(
+                      'Save offline',
+                      style: TextStyleUtil.poppins500(fontSize: 14.kh),
+                    )
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  controller.showShareOptions.value = false;
+                },
+                child: Row(
+                  children: [
+                    const Icon(CupertinoIcons.xmark),
+                    Text(
+                      'Close',
+                      style: TextStyleUtil.poppins500(fontSize: 14.kh),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -77,14 +158,14 @@ class DirectioncardView extends GetView<DirectioncardController> {
             children: [
               const buildPanelHandle(),
               buildHeader('Routes', context),
-              _buildLocationFields(context),
+              _buildLocationFields(context: context, onTap: () {}),
               Divider(color: context.lightGrey),
               GestureDetector(
                 onTap: () {
                   Get.toNamed(Routes.REALTIMENAVIGATION, arguments: {
-                    'getroutes': controller.getroutes,
+                    //  'getroutes': controller.getroutes,
                     'polylines': controller.polylines,
-                    'placeID': controller.placeID,
+                    // 'placeID': controller.placeID,
                     'markers': controller.markers,
                   });
                 },
@@ -95,14 +176,14 @@ class DirectioncardView extends GetView<DirectioncardController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${controller.getroutes!.data!.distance} km',
+                          '${((controller.globalController.directionCardData.value!.distance) / 1000).toStringAsFixed(2)} km',
                           style: TextStyleUtil.poppins500(
                             fontSize: 18.kh,
                             color: context.brandColor1,
                           ),
                         ),
                         Text(
-                          'via ${controller.getroutes!.data!.instructions![0]!.streetName}',
+                          'via ${controller.globalController.directionCardData.value!.name}',
                           style: TextStyleUtil.poppins400(
                             fontSize: 12.kh,
                           ),
@@ -157,7 +238,8 @@ class DirectioncardView extends GetView<DirectioncardController> {
     ).paddingOnly(right: 12.kw);
   }
 
-  Widget _buildLocationFields(BuildContext context) {
+  Widget _buildLocationFields(
+      {required BuildContext context, void Function()? onTap}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -216,16 +298,53 @@ class DirectioncardView extends GetView<DirectioncardController> {
             ],
           ),
         ),
-        _buildActionIcons(),
+        _buildActionIcons(onTapMore: () {
+          controller.showShareOptions.value = true;
+        }),
       ],
     ).paddingOnly(left: 16.kh, right: 16.kw, top: 8.kh, bottom: 8.kh);
   }
 
-  Widget _buildActionIcons() {
+  Widget _buildActionIcons({void Function()? onTapMore}) {
     return Column(
       children: [
-        const Icon(Icons.more_horiz).paddingOnly(top: 12.kh),
-        const Icon(Icons.swap_vert).paddingOnly(top: 42.kh),
+        GestureDetector(
+            onTap: onTapMore,
+            child: const Icon(Icons.more_horiz).paddingOnly(top: 12.kh)),
+        GestureDetector(
+          onTap: () async {
+            // Swap the text field values
+            final tempLatLng = controller.startPoint.value;
+            controller.startPoint.value = controller.endPoint.value;
+            controller.endPoint.value = tempLatLng;
+            final tempControllerText =
+                controller.currentLocationController.text;
+            controller.currentLocationController.text =
+                controller.destinationLocationController.text;
+            controller.destinationLocationController.text = tempControllerText;
+
+            // Swap the place names
+            final tempPlaceName = controller.currentPlaceName.value;
+            controller.currentPlaceName.value = controller.placeName.value;
+            controller.placeName.value = tempPlaceName;
+
+            controller.globalController.currentLongitude.value =
+                controller.startPoint.value!.longitude;
+
+            controller.globalController.currentLatitude.value =
+                controller.startPoint.value!.latitude;
+            controller.globalController.destinationLatitude.value =
+                controller.endPoint.value!.latitude;
+
+            controller.globalController.destinationLongitude.value =
+                controller.endPoint.value!.latitude;
+            // Clear polylines and markers, then recalculate them
+            //controller.clearPolylinesAndMarkers();
+            await controller.getNewPolylines();
+            controller.updateMap();
+          },
+          child: const Icon(Icons.swap_vert).paddingOnly(top: 42.kh),
+        ),
       ],
     ).paddingOnly(left: 8.kw);
   }
@@ -287,7 +406,8 @@ class DirectioncardView extends GetView<DirectioncardController> {
   }
 
   Widget _buildPlaceDistance() {
-    return Text('0.0 kms');
+    return Text(
+        '${((controller.globalController.directionCardData.value!.distance) / 1000).toStringAsFixed(2)} kms');
   }
 
   Widget _buildCountryText() {
@@ -345,14 +465,18 @@ class DirectioncardView extends GetView<DirectioncardController> {
           ),
           child: IconButton(
             onPressed: () {
-              print(controller.getroutes.data!.points);
+              print(
+                  'kkkkkkk ${controller.globalController.directionCardData.value!.distance}');
               controller.postSaveRoute(
-                  points: controller.getroutes.data!.points,
+                  points: controller
+                      .globalController.directionCardData.value!.points,
                   type: 'SAVED',
-                  placeId: controller.placeID,
-                  time: controller.getroutes.data!.time,
-                  distance: controller.getroutes.data!.distance,
-                  instructions: controller.getroutes.data!.instructions,
+                  placeId: controller
+                      .globalController.directionCardData.value!.placeID,
+                  time: 0,
+                  distance: controller
+                      .globalController.directionCardData.value!.distance,
+                  instructions: [],
                   startName: controller.currentPlaceName.value,
                   endName: controller.placeName.value);
             },

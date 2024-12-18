@@ -7,14 +7,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart' as google_maps_places;
-import 'package:mopedsafe/app/modules/explore/controllers/explore_controller.dart';
 import 'package:mopedsafe/app/services/dio/api_service.dart';
+import 'package:mopedsafe/app/services/responsive_size.dart';
 import 'package:mopedsafe/app/services/storage.dart';
+import 'package:mopedsafe/app/services/text_style_util.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../constants/image_constant.dart';
 import '../../../customwidgets/globalcontroller.dart';
 import '../../../models/googledirectionapiresponse.dart';
+import '../../../models/offlineroutes.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../models/saveroutes.dart';
 
@@ -28,6 +30,7 @@ class DirectioncardController extends GetxController {
   final polylines = RxSet<Polyline>();
   final markers = RxSet<Marker>();
   final showLocationOptions = false.obs;
+  final showShareOptions = false.obs;
   final currentPlaceName = ''.obs;
   final placeName = ''.obs;
   final placeRating = 0.0.obs;
@@ -37,6 +40,7 @@ class DirectioncardController extends GetxController {
   final waypointsStr = ''.obs;
   final currentHeading = 0.0.obs;
   Rxn<SaveRoutes> savedRoutes = Rxn();
+  Rxn<OfflineRoutesData> saveOfflineRoutes = Rxn();
   final currentLocationController = TextEditingController();
   final destinationLocationController = TextEditingController();
   final globalController = Get.find<GlobalController>();
@@ -67,37 +71,13 @@ class DirectioncardController extends GetxController {
     print('initiiiiiiiiiiiii');
     _loadCustomChevronIcon();
     print('ffffff ${previousRoute}');
-    // Based on the previous route, set getroutes accordingly
-    if (previousRoute == '/searchview') {
-      getroutes = Get.arguments['searchedRoutes'];
-      placeID = Get.arguments['searchedPlaceId'];
-      decodePolyline();
-      fetchPlaceDetails(placeID);
-      updateMap();
-      fetchCurrentLocationPlaceName();
-      fetchSavedRoutes();
-      newcurrentPosition.value = LatLng(globalController.currentLatitude.value,
-          globalController.currentLongitude.value);
-      print('Previous Route: }');
-      //  print(Get.find<SearchviewController>().getroutes.value!.data);
-    } else if (previousRoute == '/customnavigationbar') {
-      print('else loop');
-      getroutes = Get.arguments['recentRoutes'];
-      placeID = Get.arguments['recentPlaceId'];
-      decodePolyline();
-      fetchPlaceDetails(placeID);
-      updateMap();
-      fetchCurrentLocationPlaceName();
-      fetchSavedRoutes();
-      newcurrentPosition.value = LatLng(globalController.currentLatitude.value,
-          globalController.currentLongitude.value);
-      print(Get.find<ExploreController>().getroutes.value!.data);
-    }
-
-    // Continue with other initialization logic
-
-    // getroutes = Get.arguments['getroutes'];
-    // placeID = Get.arguments['placeID'];
+    decodePolyline();
+    fetchPlaceDetails(placeID);
+    updateMap();
+    fetchCurrentLocationPlaceName();
+    fetchSavedRoutes();
+    newcurrentPosition.value = LatLng(globalController.currentLatitude.value,
+        globalController.currentLongitude.value);
   }
 
   @override
@@ -186,26 +166,27 @@ class DirectioncardController extends GetxController {
   }
 
   Future<void> getNewPolylines() async {
-    clearPlaceDetails();
-    await APIManager.postGetRoutes(
-            sourcelatitude: newcurrentPosition.value.latitude.toString(),
-            sourcelongitude: newcurrentPosition.value.longitude.toString(),
-            destinationlatitude:
-                newdestinationPosition.value.latitude.toString(),
-            destinationlongitude:
-                newdestinationPosition.value.longitude.toString())
-        .then((value) {
-      getnewroutes.value = GetRoutes.fromJson(value.data);
-      // Decode the new polyline points
-      final points = PolylinePoints()
-          .decodePolyline(getnewroutes.value!.data!.points.toString());
-      polylineCoordinates.value = points
-          .map((point) => LatLng(point.latitude, point.longitude))
-          .toList();
+    try {
+      // Fetch new route details from the API
+      final response = await APIManager.postGetRoutes(
+        sourcelatitude: newcurrentPosition.value.latitude.toString(),
+        sourcelongitude: newcurrentPosition.value.longitude.toString(),
+        destinationlatitude: newdestinationPosition.value.latitude.toString(),
+        destinationlongitude: newdestinationPosition.value.longitude.toString(),
+      );
 
-      // Call updateMap() to refresh the display
-      updateMap();
-    });
+      if (response.statusCode == 200) {
+        // Decode polyline and update the map
+        final points = PolylinePoints().decodePolyline(response.data['points']);
+        polylineCoordinates.value =
+            points.map((e) => LatLng(e.latitude, e.longitude)).toList();
+        updateMap();
+      } else {
+        print('Error fetching polylines: ${response.data}');
+      }
+    } catch (e) {
+      print('Error in getNewPolylines: $e');
+    }
   }
 
   Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
@@ -226,9 +207,8 @@ class DirectioncardController extends GetxController {
       required String startName,
       required String endName,
       String? placeId,
-      required List<GetRoutesDataInstructions> instructions}) async {
-    print(getroutes.data!.points);
-    APIManager.postSaveRoutes(
+      required List<dynamic> instructions}) async {
+    APIManager.postSaveOfflineRoutes(
             points: points,
             time: time,
             distance: distance,
@@ -238,8 +218,14 @@ class DirectioncardController extends GetxController {
             startName: startName,
             endName: endName)
         .then((value) {
-      savedRoutes.value = SaveRoutes.fromJson(value.data);
-      print('saved time ${savedRoutes.value!.data!.time}');
+      saveOfflineRoutes.value = OfflineRoutesData.fromJson(value.data);
+      Get.dialog(AlertDialog(
+        content: Text(
+          'Route Saved Successfully',
+          style: TextStyleUtil.poppins500(fontSize: 14.kh),
+        ),
+      ));
+      print('saveOfflineRoutes ${saveOfflineRoutes.value!}');
     });
   }
 
@@ -286,23 +272,10 @@ class DirectioncardController extends GetxController {
     // clearPlaceDetails();
     RxString encodedString = ''.obs;
     print(previousRoute);
-    if (previousRoute == '/customnavigationbar') {
-      encodedString.value = Get.find<ExploreController>()
-          .getroutes
-          .value!
-          .data!
-          .points
-          .toString();
-      placeID = Get.find<ExploreController>().placeDetails!.placeId;
-      print('nav $placeID');
-    } else if (previousRoute == '/directioncard') {
-      print(previousRoute);
-      encodedString.value =
-          Get.find<ExploreController>().getroutes.value!.data!.points!;
-      placeID = Get.find<ExploreController>().placeDetails!.placeId;
-      print(
-          'searchview ${Get.find<ExploreController>().getroutes.value!.data!.points!}');
-    }
+
+    encodedString.value = globalController.directionCardData.value!.points;
+    placeID = globalController.directionCardData.value!.placeID;
+
     final points = PolylinePoints().decodePolyline(encodedString.value);
     polylineCoordinates.value =
         points.map((point) => LatLng(point.latitude, point.longitude)).toList();
@@ -328,6 +301,12 @@ class DirectioncardController extends GetxController {
     } catch (e) {
       print('Error fetching directions: $e');
     }
+  }
+
+  void clearPolylinesAndMarkers() {
+    polylines.clear();
+    markers.clear();
+    update();
   }
 
   Future<Map<String, dynamic>> getDirections(List<LatLng> waypoints) async {

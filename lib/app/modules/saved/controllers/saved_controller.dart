@@ -6,10 +6,12 @@ import 'package:mopedsafe/app/models/saveroutes.dart';
 import 'package:mopedsafe/app/services/dio/api_service.dart';
 
 import '../../../customwidgets/globalcontroller.dart';
+import '../../../models/directioncarddata.dart';
 import '../../../models/getsavedroutes.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/storage.dart';
+import '../../directioncard/controllers/directioncard_controller.dart';
 
 class SavedController extends GetxController {
   Rxn<SaveRoutes> savedRoutes = Rxn();
@@ -20,6 +22,22 @@ class SavedController extends GetxController {
   @override
   void onInit() {
     fetchSavedRoutes();
+  }
+
+  void deleteSavedRoute(String routeId) async {
+    try {
+      final response = await APIManager.deleteRoute(routeId: routeId);
+      if (response.statusCode == 200) {
+        // Successfully deleted route
+        fetchSavedRoutes();
+        print("Route deleted successfully");
+      } else {
+        // Handle failure
+        print("Failed to delete route");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   Future<void> postSaveRoute(
@@ -40,34 +58,63 @@ class SavedController extends GetxController {
             endName: endName)
         .then((value) {
       savedRoutes.value = SaveRoutes.fromJson(value.data);
-      print('saved time ${savedRoutes.value!.data!.time}');
+      print('saved time ${savedRoutes.value!.data!.distance}');
     });
   }
 
   Future<void> fetchSavedRoutes() async {
     await APIManager.getFetchSavedRoutes(type: 'SAVED').then((response) {
       getsavedRoutes.value = GetSavedRoutes.fromJson(response.data);
+      print('saved time ${getsavedRoutes.value!.data!.results![0]!.distance}');
     });
   }
 
-  Future<void> getPolylines({
-    required String sourcelatitude,
-    required String sourcelongitude,
-    required String destinationlatitude,
-    required String destinationlongitude,
-    required String placeId,
-  }) async {
+  Future<void> getPolylines(int index) async {
     await APIManager.postGetRoutes(
-            sourcelatitude: sourcelatitude,
-            sourcelongitude: sourcelongitude,
-            destinationlatitude: destinationlatitude,
-            destinationlongitude: destinationlongitude)
-        .then((value) {
-      //getDirections();
-      Get.toNamed(Routes.DIRECTIONCARD, arguments: {
-        'getroutes': getroutes.value,
-        'placeID': placeId,
-      });
+            sourcelatitude: globalController.currentLatitude.toString(),
+            sourcelongitude: globalController.currentLongitude.toString(),
+            destinationlatitude:
+                globalController.destinationLatitude.toString(),
+            destinationlongitude:
+                globalController.destinationLongitude.toString())
+        .then((response) {
+      getroutes.value = GetRoutes.fromJson(response.data);
+      print(getroutes.value!.data!.points);
+      if (getroutes.value != null) {
+        // Find the first non-empty streetName
+        String firstNonEmptyStreetName = getroutes.value!.data!.instructions!
+                .firstWhere(
+                  (instruction) => instruction?.streetName!.isNotEmpty ?? false,
+                )
+                ?.streetName ??
+            'Unknown Street';
+
+        // Convert GetRoutes data into DirectioncardData
+        final routeData = DirectioncardData(
+            points: getsavedRoutes.value!.data!.results![index]!.points!,
+            name: firstNonEmptyStreetName,
+            rating: 3.0,
+            status: 'test',
+            closingTime: 'test',
+            location: 'test',
+            imageUrls: [],
+            placeID: placeDetails?.placeId ?? '',
+            distance: getsavedRoutes.value!.data!.results![index]!.distance!
+                .toDouble());
+
+        // Save the route data for use in the Directioncard screen
+        globalController.directionCardData.value = routeData;
+
+        // Navigate to the Directioncard screen
+        if (Get.isRegistered<DirectioncardController>()) {
+          Get.delete<DirectioncardController>();
+        }
+        Get.toNamed(
+          Routes.DIRECTIONCARD,
+        );
+      } else {
+        print('Error: No routes data found.');
+      }
     });
   }
 
@@ -91,7 +138,7 @@ class SavedController extends GetxController {
     }
   }
 
-  Future<void> fetchPlaceDetails(String placeId) async {
+  Future<void> fetchPlaceDetails(String placeId, int index) async {
     final google_maps_places.GoogleMapsPlaces _places =
         google_maps_places.GoogleMapsPlaces(
             apiKey: Get.find<GetStorageService>().googleApiKey);
@@ -103,6 +150,7 @@ class SavedController extends GetxController {
           placeDetails!.geometry!.location.lat;
       globalController.destinationLongitude.value =
           placeDetails!.geometry!.location.lng;
+      getPolylines(index);
     }
   }
 }

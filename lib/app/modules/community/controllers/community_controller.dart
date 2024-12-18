@@ -48,12 +48,13 @@ class CommunityController extends GetxController {
   Future<void> fetchCommunityPostApi() async {
     try {
       // Applying the selected time filter and distance range
-      int days = 0; // Default to 0, if no time filter is selected
-      if (selectedTimeFilter.value == 1) {
+      int days = 7; // Default to 0, if no time filter is selected
+
+      if (selectedTimeFilter.value == 0) {
         days = 1; // Example: 1 day filter
+      } else if (selectedTimeFilter.value == 1) {
+        days = 3; // Example: 7 days filter
       } else if (selectedTimeFilter.value == 2) {
-        days = 4; // Example: 7 days filter
-      } else if (selectedTimeFilter.value == 3) {
         days = 7; // Example: 30 days filter
       }
 
@@ -68,6 +69,7 @@ class CommunityController extends GetxController {
 
       // Update the fetchCommunityPost value with the API response
       fetchCommunityPost.value = FetchCommunityPost.fromJson(response.data);
+      print(fetchCommunityPost.value!.data![0]!.postMedia!);
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch community posts: $e');
     }

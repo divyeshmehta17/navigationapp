@@ -10,6 +10,10 @@ import 'package:mopedsafe/app/routes/app_pages.dart';
 import 'package:mopedsafe/app/services/dio/api_service.dart';
 
 import '../../../models/uploadprofileimage.dart';
+import '../../../models/userdetails.dart';
+import '../../../services/auth.dart';
+import '../../../services/storage.dart';
+import '../../../services/userdataservice.dart';
 
 class SetprofiledetailsController extends GetxController {
   Rxn<UploadProfileImage> profileimage = Rxn<UploadProfileImage>();
@@ -20,7 +24,7 @@ class SetprofiledetailsController extends GetxController {
   var loading = false.obs; // Add this line
   RxString selectedSpeedLimit = 'Max Speed 25kmph'.obs;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  Rxn<UserDetails> userdetails = Rxn<UserDetails>();
   Future<void> sendEmailVerification() async {
     try {
       User? user = _auth.currentUser;
@@ -121,7 +125,16 @@ class SetprofiledetailsController extends GetxController {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        Get.toNamed(Routes.CUSTOMNAVIGATIONBAR);
+        userdetails.value = UserDetails.fromJson(value.data);
+        GetStorageService.appstorage.write('userdetails', userdetails.value);
+        Get.find<GetStorageService>().userLoggedIn = true;
+        Get.put(UserService());
+        Get.find<UserService>()
+            .setUserDetails(userdetails.value!)
+            .then((onValue) {
+          Get.offAndToNamed(Routes.CUSTOMNAVIGATIONBAR);
+          Get.find<Auth>().checkLocationPermissionAndNavigate();
+        });
       });
     } catch (error) {
       if (error is DioException && error.response?.statusCode == 401) {

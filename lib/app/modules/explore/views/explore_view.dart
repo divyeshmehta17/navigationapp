@@ -128,18 +128,61 @@ class ExploreView extends GetView<ExploreController> {
                 _reportButton(
                     ImageConstant.svgcarcrashicon, 'Car crash', Colors.red,
                     (index) {
-                  Get.toNamed(Routes.REPORTINCIDENT);
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Car Crash'
+                    }, // Replace with your desired type
+                  );
                 }, 0),
-                _reportButton(ImageConstant.svgcongestionIcon, 'Congestion',
-                    Colors.red, (index) {}, 1),
-                _reportButton(ImageConstant.svgroadworkIcon, 'Roadwork',
-                    Colors.orange, (index) {}, 2),
+                _reportButton(
+                    ImageConstant.svgcongestionIcon, 'Congestion', Colors.red,
+                    (index) {
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Congestion'
+                    }, // Replace with your desired type
+                  );
+                }, 1),
+                _reportButton(
+                    ImageConstant.svgroadworkIcon, 'Roadwork', Colors.orange,
+                    (index) {
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Roadwork'
+                    }, // Replace with your desired type
+                  );
+                }, 2),
                 _reportButton(ImageConstant.svgroadclosedIcon, 'Road closed',
-                    Colors.orange, (index) {}, 3),
+                    Colors.orange, (index) {
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Road closed'
+                    }, // Replace with your desired type
+                  );
+                }, 3),
                 _reportButton(ImageConstant.svgvechilestalledIcon,
-                    'Vehicle stalled', Colors.orange, (index) {}, 4),
-                _reportButton(ImageConstant.svgpoliceIcon, 'Police',
-                    Colors.orange, (index) {}, 5),
+                    'Vehicle stalled', Colors.orange, (index) {
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Vehicle stalled'
+                    }, // Replace with your desired type
+                  );
+                }, 4),
+                _reportButton(
+                    ImageConstant.svgpoliceIcon, 'Police', Colors.orange,
+                    (index) {
+                  Get.toNamed(
+                    Routes.REPORTINCIDENT,
+                    arguments: {
+                      'preSelectedIncidentType': 'Police'
+                    }, // Replace with your desired type
+                  );
+                }, 5),
               ]),
               NavigationAppButton(
                 label: 'Cancel',
@@ -282,8 +325,6 @@ class ExploreView extends GetView<ExploreController> {
                         itemCount: 2,
                         shrinkWrap: true,
                         itemBuilder: (BuildContext context, int index) {
-                          final recentSearch = controller
-                              .searchLocations.value!.data!.results![index];
                           return GestureDetector(
                             onTap: () {
                               controller.fetchPlaceDetails(
@@ -291,7 +332,7 @@ class ExploreView extends GetView<ExploreController> {
                                       .searchLocations
                                       .value!
                                       .data!
-                                      .results![index]!
+                                      .results![index + 1]!
                                       .location!
                                       .coordinates![0]!
                                       .toString(),
@@ -299,12 +340,12 @@ class ExploreView extends GetView<ExploreController> {
                                       .searchLocations
                                       .value!
                                       .data!
-                                      .results![index]!
+                                      .results![index + 1]!
                                       .location!
                                       .coordinates![1]!
                                       .toString(),
                                   placeId: controller.searchLocations.value!
-                                      .data!.results![index]!.placeId
+                                      .data!.results![index + 1]!.placeId
                                       .toString());
                             },
                             child: Row(
@@ -317,7 +358,13 @@ class ExploreView extends GetView<ExploreController> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        recentSearch!.location!.addressLine
+                                        controller
+                                            .searchLocations
+                                            .value!
+                                            .data!
+                                            .results![index + 1]!
+                                            .location!
+                                            .addressLine
                                             .toString(),
                                         maxLines: 3,
                                         overflow: TextOverflow.ellipsis,

@@ -60,8 +60,6 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
               left: 10,
               right: 10,
               child: Obx(() {
-                print('totaldistance ${controller.totalduration}');
-                print(controller.totalduration);
                 return Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8.kw),
@@ -69,18 +67,40 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        controller.maneuverIcon.value,
-                        size: 50.kh,
-                        color: Colors.white,
-                      ),
+                      Column(
+                        children: [
+                          Icon(
+                            controller.maneuverIcon.value,
+                            size: 40.kh,
+                            color: Colors.white,
+                          ),
+                          Text(
+                            '200m',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 18.kh),
+                          ),
+                        ],
+                      ).paddingOnly(left: 8.kw),
                       const SizedBox(width: 10),
-                      Text(
-                        controller.maneuverText.value,
-                        style: TextStyle(color: Colors.white, fontSize: 18.kh),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            controller.maneuverText.value,
+                            style: TextStyleUtil.poppins500(
+                                color: Colors.white, fontSize: 20.kh),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Towards Jaywant Sawant Road',
+                            style: TextStyleUtil.poppins400(
+                                color: Colors.white, fontSize: 14.kh),
+                          ).paddingOnly(top: 8.kw),
+                        ],
                       ),
                     ],
-                  ),
+                  ).paddingOnly(top: 8.kh, bottom: 8.kh),
                 );
               }),
             ),
@@ -100,14 +120,14 @@ class RealtimenavigationView extends GetView<RealtimenavigationController> {
                           children: [
                             Obx(
                               () => Text(
-                                '${controller.totalduration.toStringAsFixed(2)} mins (${controller.totalDistance.toStringAsFixed(2)} km)',
+                                '0h 30m  (${((controller.globalController.directionCardData.value!.distance) / 1000).toStringAsFixed(2)} km)',
                                 style: TextStyleUtil.poppins400(
                                     fontSize: 19.kh,
                                     color: context.brandColor1),
                               ),
                             ),
                             Text(
-                              'ETA: ${controller.formatEstimatedTime(controller.estimatedTime.value)}',
+                              'ETA: 4:30 PM',
                               style: TextStyleUtil.poppins400(fontSize: 14.kh),
                             ),
                           ],

@@ -164,39 +164,39 @@ class CommunityView extends GetView<CommunityController> {
         onRefresh: () => controller.fetchCommunityPostApi(),
         child: Obx(() {
           final posts = controller.reversedCommunityPosts;
-          if (posts == null || posts.isEmpty) {
-            return const Center(
-              child: Text(
-                'No recent incidents found',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
-            );
-          }
-          return ListView.builder(
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              final DateTime createdAt = DateTime.parse(post.createdAt).toUtc();
-              final DateTime localTime = createdAt.toLocal();
-              final String formattedTime =
-                  DateFormat('hh:mm a').format(localTime);
+          return posts == null || posts.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No recent incidents found',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    final DateTime createdAt =
+                        DateTime.parse(post.createdAt).toUtc();
+                    final DateTime localTime = createdAt.toLocal();
+                    final String formattedTime =
+                        DateFormat('hh:mm a').format(localTime);
 
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPostHeader(post),
-                    _buildPostBody(post, formattedTime),
-                  ],
-                ),
-              );
-            },
-          );
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildPostHeader(post),
+                          _buildPostBody(post, formattedTime),
+                        ],
+                      ),
+                    );
+                  },
+                );
         }),
       ),
       floatingActionButton: FloatingActionButton(

@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mopedsafe/app/modules/community/controllers/community_controller.dart';
 import 'package:mopedsafe/app/routes/app_pages.dart';
 
+import '../../../constants/image_constant.dart';
 import '../../../models/reportincident.dart';
 import '../../../models/uploadprofileimage.dart';
 import '../../../services/dio/api_service.dart';
@@ -27,12 +28,36 @@ class ReportincidentController extends GetxController {
   final google_maps_places.GoogleMapsPlaces _places;
   // List of incident types with icons
   final incidentTypes = [
-    {'type': 'Car Crash', 'icon': Icons.directions_car},
-    {'type': 'Congestion', 'icon': Icons.traffic},
-    {'type': 'Roadwork', 'icon': Icons.construction},
-    {'type': 'Road closed', 'icon': Icons.block},
-    {'type': 'Vehicle stalled', 'icon': Icons.car_repair},
-    {'type': 'Police', 'icon': Icons.local_police},
+    {
+      'type': 'Car Crash',
+      'icon': ImageConstant.svgcarcrashicon,
+      'color': Colors.red
+    },
+    {
+      'type': 'Congestion',
+      'icon': ImageConstant.svgcongestionIcon,
+      'color': Colors.red
+    },
+    {
+      'type': 'Roadwork',
+      'icon': ImageConstant.svgroadworkIcon,
+      'color': Colors.orange
+    },
+    {
+      'type': 'Road closed',
+      'icon': ImageConstant.svgroadclosedIcon,
+      'color': Colors.orange
+    },
+    {
+      'type': 'Vehicle stalled',
+      'icon': ImageConstant.svgvechilestalledIcon,
+      'color': Colors.orange
+    },
+    {
+      'type': 'Police',
+      'icon': ImageConstant.svgpoliceIcon,
+      'color': Colors.orange
+    },
   ];
 
   // Selected type of incident
@@ -44,6 +69,16 @@ class ReportincidentController extends GetxController {
   ReportincidentController()
       : _places = google_maps_places.GoogleMapsPlaces(
             apiKey: Get.find<GetStorageService>().googleApiKey);
+
+  @override
+  void onInit() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('preSelectedIncidentType')) {
+      selectedIncidentType.value = args['preSelectedIncidentType'];
+      print(selectedIncidentType);
+    }
+  }
+
   Future<void> getCurrentLocation() async {
     isLoading.value = true; // Start loading
     try {

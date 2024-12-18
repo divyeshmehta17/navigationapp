@@ -27,6 +27,18 @@ class APIManager {
     });
   }
 
+  static Future<Response> deleteRoute({
+    bool showSnakbar = true,
+    required String routeId, // ID of the route to be deleted
+  }) async {
+    print(' ${Endpoints.baseUrl + Endpoints.deleteRoute + routeId}');
+    return await DioClient(Dio(),
+            showSnakbar: showSnakbar, isOverlayLoader: true)
+        .delete(
+      Endpoints.baseUrl + Endpoints.deleteRoute + routeId,
+    );
+  }
+
   static Future<Response> postSaveRoutes(
       {bool showSnakbar = true,
       required String points,
@@ -34,6 +46,29 @@ class APIManager {
       required String endName,
       required int time,
       required List<GetRoutesDataInstructions> instructions,
+      required double distance,
+      String? placeID,
+      required String type}) async {
+    return await DioClient(Dio(),
+            showSnakbar: showSnakbar, isOverlayLoader: true)
+        .post(Endpoints.baseUrl + Endpoints.saveRoutes, data: {
+      "points": points, "startName": startName, "endName": endName,
+      "instructions": instructions,
+      "time": time,
+      "distance": distance,
+      "type": type,
+      "placeId": placeID
+      // OFFLINE or SAVED
+    });
+  }
+
+  static Future<Response> postSaveOfflineRoutes(
+      {bool showSnakbar = true,
+      required String points,
+      required String startName,
+      required String endName,
+      required int time,
+      required List<dynamic> instructions,
       required double distance,
       String? placeID,
       required String type}) async {
@@ -122,28 +157,33 @@ class APIManager {
 
   static Future<Response> postReportIncident({
     required String typeOfIncident,
-    required String key,
-    required String url,
     required String type,
     required String addressLine,
     required double latitude,
     required double longitude,
     required String description,
+    String? key, // Optional
+    String? url, // Optional
     bool showSnakbar = false,
   }) async {
+    // Base request body
     Map<String, dynamic> body = {
       "typeOfIncident": typeOfIncident,
       "location": {
         "type": type,
-        // [longitude, latitude]
-        "coordinates": [longitude, latitude],
+        "coordinates": [longitude, latitude], // [longitude, latitude]
         "addressLine": addressLine,
       },
       "description": description,
-      "postMedia": [
-        {"key": key, "url": url}
-      ],
     };
+
+    // Add postMedia only if both key and url are provided
+    if (key != null && url != null) {
+      body["postMedia"] = [
+        {"key": key, "url": url}
+      ];
+    }
+
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: false)
         .post(
@@ -220,6 +260,15 @@ class APIManager {
     required String waypointsStr,
     required String googleApiKey,
   }) async {
+    print('https://maps.googleapis.com/maps/api/directions/json'
+        '?origin=${currentLatitude},${currentLongitude}' // Start point
+        '&destination=${destinationLatitude},${destinationLongitude}' // End point
+        '&waypoints=$waypointsStr' // Formatted waypoints
+        '&mode=driving' // Mode of transport
+        '&alternatives=true' // Get alternative routes
+        '&traffic_model=best_guess' // Best guess for traffic data
+        '&departure_time=now' // For live traffic data
+        '&key=${googleApiKey}');
     return await DioClient(Dio(),
             showSnakbar: showSnakbar, isOverlayLoader: true)
         .get(

@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../components/SavedLocationData.dart';
 import '../../../customwidgets/globalcontroller.dart';
+import '../../../models/directioncarddata.dart';
 import '../../../models/locationHistory.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../models/postSaveLocation.dart';
@@ -38,6 +39,7 @@ class SearchviewController extends GetxController {
   void onInit() {
     getSavedLocation();
     getHistoryLocation();
+    print(Get.currentRoute);
     searchcontroller.addListener(() {
       final query = searchcontroller.text;
       if (query.isNotEmpty) {
@@ -126,16 +128,41 @@ class SearchviewController extends GetxController {
         .then((value) {
       getroutes.value = GetRoutes.fromJson(value.data);
       print(getroutes.value!.data!.points);
+      if (getroutes.value != null) {
+        // Find the first non-empty streetName
+        String firstNonEmptyStreetName = getroutes.value!.data!.instructions!
+                .firstWhere(
+                  (instruction) => instruction?.streetName!.isNotEmpty ?? false,
+                )
+                ?.streetName ??
+            'Unknown Street';
 
-      // Manually delete the DirectioncardController if it exists
-      if (Get.isRegistered<DirectioncardController>()) {
-        Get.delete<DirectioncardController>();
+        // Convert GetRoutes data into DirectioncardData
+        final routeData = DirectioncardData(
+          points: getroutes.value!.data!.points!,
+          name: firstNonEmptyStreetName,
+          rating: 3.0,
+          status: 'test',
+          closingTime: 'test',
+          location: 'test',
+          imageUrls: [],
+          placeID: placeDetails?.placeId ?? '',
+          distance: getroutes.value!.data!.distance! / 1000,
+        );
+
+        // Save the route data for use in the Directioncard screen
+        globalController.directionCardData.value = routeData;
+
+        // Navigate to the Directioncard screen
+        if (Get.isRegistered<DirectioncardController>()) {
+          Get.delete<DirectioncardController>();
+        }
+        Get.toNamed(
+          Routes.DIRECTIONCARD,
+        );
+      } else {
+        print('Error: No routes data found.');
       }
-
-      Get.toNamed(Routes.DIRECTIONCARD, arguments: {
-        'getroutes': getroutes.value,
-        'placeID': placeDetails!.placeId,
-      });
     });
   }
 
@@ -218,16 +245,41 @@ class SearchviewController extends GetxController {
         .then((value) {
       getroutes.value = GetRoutes.fromJson(value.data);
       print(getroutes.value!.data!.points);
+      if (getroutes.value != null) {
+        // Find the first non-empty streetName
+        String firstNonEmptyStreetName = getroutes.value!.data!.instructions!
+                .firstWhere(
+                  (instruction) => instruction?.streetName!.isNotEmpty ?? false,
+                )
+                ?.streetName ??
+            'Unknown Street';
 
-      // Manually delete the DirectioncardController if it exists
-      if (Get.isRegistered<DirectioncardController>()) {
-        Get.delete<DirectioncardController>();
+        // Convert GetRoutes data into DirectioncardData
+        final routeData = DirectioncardData(
+          points: getroutes.value!.data!.points!,
+          name: firstNonEmptyStreetName,
+          rating: 3.0,
+          status: 'test',
+          closingTime: 'test',
+          location: 'test',
+          imageUrls: [],
+          placeID: placeDetails?.placeId ?? '',
+          distance: getroutes.value!.data!.distance! / 1000,
+        );
+
+        // Save the route data for use in the Directioncard screen
+        globalController.directionCardData.value = routeData;
+
+        // Navigate to the Directioncard screen
+        if (Get.isRegistered<DirectioncardController>()) {
+          Get.delete<DirectioncardController>();
+        }
+        Get.toNamed(
+          Routes.DIRECTIONCARD,
+        );
+      } else {
+        print('Error: No routes data found.');
       }
-
-      Get.toNamed(Routes.DIRECTIONCARD, arguments: {
-        'searchedRoutes': getroutes.value,
-        'searchedPlaceId': placeDetails!.placeId,
-      });
     });
   }
 
@@ -268,24 +320,44 @@ class SearchviewController extends GetxController {
                 globalController.destinationLatitude.toString(),
             destinationlongitude:
                 globalController.destinationLongitude.toString())
-        .then((value) {
-      getroutes.value = GetRoutes.fromJson(value.data);
-      saveSearchedLocation(
-          addressLine: placeDetails!.formattedAddress.toString(),
-          lat: globalController.destinationLatitude.toDouble(),
-          lng: globalController.destinationLongitude.toDouble(),
-          placeId: placeDetails!.placeId.toString());
+        .then((response) {
+      getroutes.value = GetRoutes.fromJson(response.data);
       print(getroutes.value!.data!.points);
+      if (getroutes.value != null) {
+        // Find the first non-empty streetName
+        String firstNonEmptyStreetName = getroutes.value!.data!.instructions!
+                .firstWhere(
+                  (instruction) => instruction?.streetName!.isNotEmpty ?? false,
+                )
+                ?.streetName ??
+            'Unknown Street';
 
-      // Manually delete the DirectioncardController if it exists
-      if (Get.isRegistered<DirectioncardController>()) {
-        Get.delete<DirectioncardController>();
+        // Convert GetRoutes data into DirectioncardData
+        final routeData = DirectioncardData(
+          points: getroutes.value!.data!.points!,
+          name: firstNonEmptyStreetName,
+          rating: 3.0,
+          status: 'test',
+          closingTime: 'test',
+          location: 'test',
+          imageUrls: [],
+          placeID: placeDetails?.placeId ?? '',
+          distance: getroutes.value!.data!.distance!,
+        );
+
+        // Save the route data for use in the Directioncard screen
+        globalController.directionCardData.value = routeData;
+
+        // Navigate to the Directioncard screen
+        if (Get.isRegistered<DirectioncardController>()) {
+          Get.delete<DirectioncardController>();
+        }
+        Get.toNamed(
+          Routes.DIRECTIONCARD,
+        );
+      } else {
+        print('Error: No routes data found.');
       }
-      print('placedtails ${placeDetails!.placeId}');
-      Get.offNamed(Routes.DIRECTIONCARD, arguments: {
-        'searchedPlaceId': placeDetails!.placeId,
-        'searchedRoutes': getroutes.value
-      });
     });
   }
 }

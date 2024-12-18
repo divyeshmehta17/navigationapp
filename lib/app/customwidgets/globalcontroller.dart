@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
+import '../models/directioncarddata.dart';
+import '../models/polylinestrack.dart';
+
 class GlobalController extends GetxController {
   var currentLatitude = 0.0.obs;
   var currentLongitude = 0.0.obs;
@@ -12,8 +15,9 @@ class GlobalController extends GetxController {
 
   Location location = Location();
   GoogleMapController? mapController;
-
+  Rx<GetRoutes?> routes = Rx<GetRoutes?>(null);
   Timer? locationServiceChecker;
+  Rxn<DirectioncardData> directionCardData = Rxn<DirectioncardData>();
 
   @override
   void onInit() async {
@@ -40,6 +44,10 @@ class GlobalController extends GetxController {
     // Cancel the timer when the controller is closed
     locationServiceChecker?.cancel();
     super.onClose();
+  }
+
+  void setRoutes(GetRoutes? newRoutes) {
+    routes.value = newRoutes;
   }
 
   void _startLocationServiceChecker() {

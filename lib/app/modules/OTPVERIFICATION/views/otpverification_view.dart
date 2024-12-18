@@ -127,19 +127,52 @@ class locationAccessSplashScreen extends StatelessWidget {
             ),
             Text("📍 Grant Location Access",
                     textAlign: TextAlign.center,
-                    style: TextStyleUtil.poppins700(fontSize: 24.kh))
+                    style: TextStyleUtil.poppins700(
+                        fontSize: 24.kh, color: Colors.white))
                 .paddingOnly(top: 20.kh, bottom: 20.kh),
             Text("To tailor your route and ensure a safe journey, MopedSafe needs access to your location. We respect your privacy and only use it for navigation purposes.",
                     textAlign: TextAlign.center,
-                    style: TextStyleUtil.poppins500(fontSize: 14.kh))
+                    style: TextStyleUtil.poppins400(
+                        fontSize: 14.kh, color: Colors.white))
                 .paddingOnly(bottom: 85.kh),
             NavigationAppButton(
               label: 'Allow Access',
-              onTap: () {
-                Permission.location
-                    .request()
-                    .isGranted
-                    .then((value) => Get.toNamed(Routes.CUSTOMNAVIGATIONBAR));
+              onTap: () async {
+                PermissionStatus status = await Permission.location.request();
+                if (status.isGranted) {
+                  // If permission is granted, navigate to the next screen
+                  Get.toNamed(Routes.CUSTOMNAVIGATIONBAR);
+                } else if (status.isDenied) {
+                  // If permission is denied, show a message to the user
+                  Get.snackbar(
+                    'Permission Denied',
+                    'Location access is required to proceed.',
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                } else if (status.isPermanentlyDenied) {
+                  // If permission is permanently denied, direct the user to settings
+                  Get.dialog(
+                    AlertDialog(
+                      title: const Text('Permission Required'),
+                      content: const Text(
+                          'Location access is permanently denied. Please enable it from the app settings.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Get.back(), // Close the dialog
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            openAppSettings(); // Opens app settings
+                            Get.back();
+                          },
+                          child: const Text('Open Settings'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
               },
               color: Colors.white,
               borderRadius: BorderRadius.circular(48.kw),

@@ -164,23 +164,10 @@ class SearchviewView extends GetView<SearchviewController> {
                       SizedBox(height: 20.kh),
 
                       // Recent Searches
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Recent',
-                            style: TextStyleUtil.poppins600(
-                                fontSize: 16.kh, color: Colors.black),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              'See All',
-                              style: TextStyleUtil.poppins400(
-                                  fontSize: 14.kh, color: context.darkGrey),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Recent',
+                        style: TextStyleUtil.poppins600(
+                            fontSize: 16.kh, color: Colors.black),
                       ),
                       controller.searchLocations.value == null
                           ? const CircularProgressIndicator()
@@ -190,10 +177,6 @@ class SearchviewView extends GetView<SearchviewController> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (context, index) {
-                                final recentSearch = controller.searchLocations
-                                    .value!.data!.results![index];
-                                print(recentSearch!.location!.addressLine
-                                    .toString());
                                 return GestureDetector(
                                   onTap: () {
                                     controller.fetchPlaceDetailsRecent(
@@ -226,8 +209,13 @@ class SearchviewView extends GetView<SearchviewController> {
                                         .paddingOnly(right: 18.kw),
                                     Expanded(
                                       child: Text(
-                                        recentSearch.location!.addressLine
-                                            .toString(),
+                                        controller
+                                            .searchLocations
+                                            .value!
+                                            .data!
+                                            .results![index]!
+                                            .location!
+                                            .addressLine!,
                                         maxLines: 3,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyleUtil.poppins400(

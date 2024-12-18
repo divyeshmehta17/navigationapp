@@ -5,8 +5,9 @@ import 'enigma.dart';
 
 class GetStorageService extends GetxService {
   static final _runData = GetStorage('runData');
-  static final GetStorage _appstorage = GetStorage("appstorage");
+  static final _appstorage = GetStorage("appstorage"); // Static instance
   final String googleApiKey = 'AIzaSyBO4WzyVucman3AU5D51ox2PP7cpn3FPzY';
+
   bool get getisCreator => _runData.read('isCreator') ?? false;
   set setisCreator(bool val) => _runData.write('isCreator', val);
 
@@ -20,8 +21,10 @@ class GetStorageService extends GetxService {
       decryptAESCryptoJS(_runData.read('jwToken') ?? '') ?? '';
   set setEncjwToken(String val) =>
       _runData.write('jwToken', encryptAESCryptoJS(val));
+
   String? get deviceToken => _appstorage.read('deviceToken');
   set deviceToken(String? token) => _appstorage.write('deviceToken', token);
+
   set userLoggedIn(bool status) => _appstorage.write("status", status);
   bool get userLoggedIn => _appstorage.read("status") ?? false;
 
@@ -29,4 +32,7 @@ class GetStorageService extends GetxService {
     _runData.erase();
     _appstorage.erase();
   }
+
+  // Access static _appstorage directly through the class
+  static GetStorage get appstorage => _appstorage;
 }

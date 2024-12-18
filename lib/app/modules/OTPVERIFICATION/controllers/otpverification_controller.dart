@@ -16,8 +16,20 @@ class OtpverificationController extends GetxController {
   final Map<String, dynamic> phoneArgument = Get.arguments;
   Rxn<UserDetails> userdetails = Rxn<UserDetails>();
   @override
+  @override
   void onInit() {
+    super.onInit();
     isEnabled.value = false;
+
+    // Check if the user is logged in and retrieve user details from storage
+    final storedUserDetails = GetStorageService.appstorage.read('userdetails');
+    if (storedUserDetails != null) {
+      userdetails.value = UserDetails.fromJson(storedUserDetails);
+      Get.find<GetStorageService>().userLoggedIn = true;
+      Get.put(UserService());
+      Get.find<UserService>().setUserDetails(userdetails.value!);
+      Get.offAndToNamed(Routes.CUSTOMNAVIGATIONBAR);
+    }
   }
 
   void verifyOtp(BuildContext context) async {
@@ -39,19 +51,26 @@ class OtpverificationController extends GetxController {
   Future<void> loginApi() async {
     try {
       await APIManager.postLogin(showSnakbar: false).then((value) {
+        // Convert API response to UserDetails
         userdetails.value = UserDetails.fromJson(value.data);
+
+        // Serialize UserDetails to JSON and write to storage
+        GetStorageService.appstorage
+            .write('userdetails', userdetails.value!.toJson());
+
+        // Update the app state
         Get.find<GetStorageService>().userLoggedIn = true;
         Get.put(UserService());
         Get.find<UserService>().setUserDetails(userdetails.value!);
+
+        // Navigate to the home screen
         Get.offAndToNamed(Routes.CUSTOMNAVIGATIONBAR);
         Get.find<Auth>().checkLocationPermissionAndNavigate();
       });
     } catch (error) {
       if (error is DioException && error.response?.statusCode == 404) {
-        // Handle 404 error specifically
         Get.toNamed(Routes.SETPROFILEDETAILS);
       } else {
-        // Handle other errors
         Get.snackbar(
           'Error',
           'An unexpected error occurred. Please try again later.',

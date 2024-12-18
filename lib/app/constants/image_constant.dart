@@ -37,6 +37,7 @@ class ImageConstant {
   static String svgLocation = 'assets/images/location.svg';
   static String svgreportIcon = 'assets/images/reportIcon.svg';
   static String svgfindmopedsplash = 'assets/images/findmopedsplash.svg';
+  static String svgcustomizesplash = 'assets/images/customizesplash.svg';
   static String svgmapStyleIcon = 'assets/images/mapStyleIcon.svg';
 //PNGs
   static String pngsmartphone = 'assets/images/smartphone.png';

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:mopedsafe/app/components/common_image_view.dart';
 import 'package:mopedsafe/app/components/customappbar.dart';
 import 'package:mopedsafe/app/customwidgets/buildLocationInputField.dart';
 import 'package:mopedsafe/app/services/colors.dart';
@@ -52,13 +53,24 @@ class ReportincidentView extends GetView<ReportincidentController> {
                             value: incident['type'] as String,
                             child: Row(
                               children: [
-                                Icon(incident['icon'] as IconData, size: 20),
+                                CircleAvatar(
+                                  backgroundColor: incident['color'] as Color,
+                                  child: CommonImageView(
+                                    svgPath: incident['icon'] as String,
+                                    svgColor: Colors.white,
+                                    height: 20.kh,
+                                    width: 20.kh,
+                                  ),
+                                ),
                                 const SizedBox(width: 8),
                                 Text(incident['type'] as String),
                               ],
                             ),
                           ))
                       .toList(),
+                  value: controller.selectedIncidentType.value.isNotEmpty
+                      ? controller.selectedIncidentType.value
+                      : null, // Set initial value if preselected
                   onChanged: (value) {
                     controller.selectedIncidentType.value = value!;
                   },
@@ -75,9 +87,9 @@ class ReportincidentView extends GetView<ReportincidentController> {
                 buildLocationInputField(
                   controller: controller.searchcontroller,
                   itemClick: (Prediction) {
-                    // controller.selectedLocation.value =
-                    //     Prediction.description!.toString();
-                    // controller.searchcontroller.text = Prediction.description!;
+                    controller.selectedLocation.value =
+                        Prediction.description!.toString();
+                    controller.searchcontroller.text = Prediction.description!;
                   },
                   context: context,
                   focusNode: FocusNode(),
@@ -159,7 +171,7 @@ class ReportincidentView extends GetView<ReportincidentController> {
                           controller.profileimage.value?.files?[0]?.key;
                       final profileImageUrl =
                           controller.profileimage.value?.files?[0]?.url;
-
+                      print(profileImageUrl);
                       controller.postCreatePost(
                         typeOfIncident: controller.selectedIncidentType.value,
                         latitude: 40.712776,

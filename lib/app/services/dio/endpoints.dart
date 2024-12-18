@@ -17,6 +17,7 @@ class Endpoints {
   static const String fetchcommunitypost = "community/incident/get/all";
   static const String createreportincident = "community/incident/create";
   static const String getRoutes = "navigation/direction/route";
+  static const String deleteRoute = "route/delete/";
   static const String saveRoutes = "route/save";
   static const String getsavedRoutes = "route/get/all";
   static const String getsavedPlace = "route/place/get/all";

@@ -23,7 +23,7 @@ class SavedrealtimenavigationView
               GoogleMap(
                 polylines: {
                   Polyline(
-                    polylineId: PolylineId('route'),
+                    polylineId: const PolylineId('route'),
                     points: controller.polylinecoordinates,
                     color: Colors.blue,
                     width: 5,
@@ -42,8 +42,8 @@ class SavedrealtimenavigationView
                 ),
               ),
               Container(
-                decoration:
-                    BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: Colors.white, shape: BoxShape.circle),
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(children: <TextSpan>[

@@ -43,19 +43,24 @@ class SetprofiledetailsView extends GetView<SetprofiledetailsController> {
                 children: [
                   Obx(() => controller.profileimage.value == null ||
                           Get.previousRoute == Routes.PROFILE
-                      ? Container(
-                          height: 120.kh,
-                          width: 120.kw,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey.shade300,
-                              border: Border.all(
-                                  width: 3.kw,
-                                  color: context.profilePicBorder)),
-                          child: CommonImageView(
-                            svgPath: ImageConstant.svgdummyperson,
-                          ).paddingAll(20.kw),
-                        ).paddingOnly(top: 18.kh)
+                      ? GestureDetector(
+                          onTap: () {
+                            controller.pickImage();
+                          },
+                          child: Container(
+                            height: 120.kh,
+                            width: 120.kw,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey.shade300,
+                                border: Border.all(
+                                    width: 3.kw,
+                                    color: context.profilePicBorder)),
+                            child: CommonImageView(
+                              svgPath: ImageConstant.svgdummyperson,
+                            ).paddingAll(20.kw),
+                          ).paddingOnly(top: 18.kh),
+                        )
                       : Container(
                           height: 120.kh,
                           width: 120.kw,
@@ -132,12 +137,23 @@ class SetprofiledetailsView extends GetView<SetprofiledetailsController> {
                       Icons.calendar_month,
                     ),
                     onPressed: () async {
+                      DateTime initialDate = DateTime.now();
+                      if (controller.dobController.text.isNotEmpty) {
+                        try {
+                          initialDate = DateFormat('yyyy-MM-dd')
+                              .parse(controller.dobController.text);
+                        } catch (e) {
+                          // If parsing fails, keep it as today's date
+                        }
+                      }
+
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now(),
+                        initialDate: initialDate,
                         firstDate: DateTime(1900),
                         lastDate: DateTime(2100),
                       );
+
                       if (pickedDate != null) {
                         String formattedDate =
                             DateFormat('yyyy-MM-dd').format(pickedDate);
