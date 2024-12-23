@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../../../models/getsavedroutes.dart';
+import '../../../models/offlineroutes.dart';
 import '../../../services/auth.dart';
 import '../../../services/dio/api_service.dart';
 import '../../../services/storage.dart';
@@ -20,7 +20,7 @@ class CustomnavigationbarController extends GetxController {
     const ProfileView()
   ];
 
-  Rxn<GetSavedRoutes> getsavedRoutes = Rxn();
+  Rxn<OfflineRoutesData> getsavedRoutes = Rxn();
   RxInt selectedPageIndex = 0.obs;
 
   final GetStorageService storageService = Get.find<GetStorageService>();
@@ -42,17 +42,16 @@ class CustomnavigationbarController extends GetxController {
   /// Fetch saved routes from API and save offline
   Future<void> fetchSavedRoutes() async {
     APIManager.getFetchSavedRoutes(type: 'OFFLINE').then((response) {
-      final fetchedRoutes = GetSavedRoutes.fromJson(response.data);
+      final fetchedRoutes = OfflineRoutesData.fromJson(response.data);
       getsavedRoutes.value = fetchedRoutes;
-      print(
-          "Saved routes offline: ${getsavedRoutes.value!.data!.results![0]!.instructions![0]}");
+      print("Saved routes offline: ${fetchedRoutes}");
       // Save fetched routes locally
       _saveRoutesOffline(fetchedRoutes);
     });
   }
 
   /// Save routes to local storage
-  void _saveRoutesOffline(GetSavedRoutes routes) {
+  void _saveRoutesOffline(OfflineRoutesData routes) {
     final routesJson = jsonEncode(routes.toJson());
     GetStorageService.appstorage.write('offlineRoutes', routesJson);
   }
@@ -60,8 +59,11 @@ class CustomnavigationbarController extends GetxController {
   /// Load routes from local storage
   void _loadOfflineRoutes() {
     final routesJson = GetStorageService.appstorage.read('offlineRoutes');
+    final googleroutesJson =
+        GetStorageService.appstorage.read('saved_directions');
     if (routesJson != null) {
-      getsavedRoutes.value = GetSavedRoutes.fromJson(jsonDecode(routesJson));
+      getsavedRoutes.value = OfflineRoutesData.fromJson(jsonDecode(routesJson));
+      print('navigation bar ${googleroutesJson}');
     }
   }
 }

@@ -205,17 +205,6 @@ class RealtimenavigationController extends GetxController {
     }
   }
 
-  // Future<BitmapDescriptor> _getBitmapDescriptorFromAsset(
-  //     String assetPath) async {
-  //   final Completer<BitmapDescriptor> bitmapDescriptor = Completer();
-  //   const ImageConfiguration config = ImageConfiguration(devicePixelRatio: 2.5);
-  //   BitmapDescriptor.asset(config, assetPath).then((icon) {
-  //     bitmapDescriptor.complete(icon);
-  //   });
-  //   return bitmapDescriptor.future;
-  // }
-
-// This function ensures the camera moves smoothly over time
   void _smoothCameraTransition(LatLng newPosition) {
     if (mapController == null) return;
 

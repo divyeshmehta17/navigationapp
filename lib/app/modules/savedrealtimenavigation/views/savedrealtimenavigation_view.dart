@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mopedsafe/app/services/colors.dart';
@@ -24,7 +24,7 @@ class SavedrealtimenavigationView
                 polylines: {
                   Polyline(
                     polylineId: const PolylineId('route'),
-                    points: controller.polylinecoordinates,
+                    points: controller.polylineCoordinates,
                     color: Colors.blue,
                     width: 5,
                   )
@@ -35,54 +35,87 @@ class SavedrealtimenavigationView
                 myLocationButtonEnabled: true,
                 initialCameraPosition: CameraPosition(
                   target: LatLng(
-                    controller.polylinecoordinates[0].latitude,
-                    controller.polylinecoordinates[0].longitude,
+                    controller.polylineCoordinates[0].latitude,
+                    controller.polylineCoordinates[0].longitude,
                   ),
                   zoom: 17,
                 ),
               ),
-              Container(
-                decoration: const BoxDecoration(
-                    color: Colors.white, shape: BoxShape.circle),
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(children: <TextSpan>[
-                    TextSpan(
-                      text: controller.userSpeed.toStringAsFixed(2),
-                      style: TextStyleUtil.poppins500(fontSize: 20.kh),
-                    ),
-                    TextSpan(
-                      text: '\nkm/h',
-                      style: TextStyleUtil.poppins500(fontSize: 10.kh),
-                    ),
-                  ]),
-                ).paddingAll(16.kw),
-              ).paddingOnly(bottom: 250.kh),
+              GestureDetector(
+                onTap: () {
+                  // controller.updateManeuverText(controller.currentPosition);
+                },
+                child: Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white, shape: BoxShape.circle),
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(children: <TextSpan>[
+                      TextSpan(
+                        text: controller.userSpeed.toStringAsFixed(2),
+                        style: TextStyleUtil.poppins500(fontSize: 20.kh),
+                      ),
+                      TextSpan(
+                        text: '\nkm/h',
+                        style: TextStyleUtil.poppins500(fontSize: 10.kh),
+                      ),
+                    ]),
+                  ).paddingAll(16.kw),
+                ).paddingOnly(bottom: 250.kh),
+              ),
               Positioned(
-                  top: 50,
-                  left: 10,
-                  right: 10,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.kw),
-                      color: context.brandColor1,
-                    ),
-                    child: Row(
+                top: 50,
+                left: 10,
+                right: 10,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: context.brandColor1,
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Obx(
+                    () => Row(
                       children: [
-                        Icon(
-                          CupertinoIcons.left_chevron,
-                          size: 50.kh,
-                          color: Colors.white,
+                        Column(
+                          children: [
+                            Icon(
+                              controller.getManeuverIcon(
+                                  controller.directionText.value),
+                              size: 50.kh,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              controller.directionTurnText.value,
+                              style: TextStyleUtil.poppins400(
+                                fontSize: 19.kh,
+                                color: Colors.white,
+                              ),
+                            )
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          controller.maneuverText.value,
-                          style:
-                              TextStyle(color: Colors.white, fontSize: 18.kh),
+                        Expanded(
+                          child: Html(
+                            data: controller.maneuverText.value,
+                            style: {
+                              "body": Style(
+                                color: Colors.white,
+                                fontSize: FontSize(18),
+                              ),
+                              "div": Style(
+                                color: Colors.white70,
+                                fontSize: FontSize(14),
+                              ),
+                              "b": Style(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            },
+                          ),
                         ),
                       ],
                     ),
-                  )),
+                  ),
+                ),
+              ),
               SlidingUpPanelWidget(
                 panelController: controller.panelController,
                 minHeight: 25.h,
@@ -98,14 +131,14 @@ class SavedrealtimenavigationView
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${controller.getSavedRoutes!.value!.data!.results![0]!.distance} km',
+                                '${controller.getSavedRoutes!.data!.results![0]!.distance} km',
                                 style: TextStyleUtil.poppins400(
                                   fontSize: 19.kh,
                                   color: context.brandColor1,
                                 ),
                               ),
                               Text(
-                                'ETA: ${controller.getSavedRoutes!.value!.data!.results![0]!.time} mins',
+                                'ETA: ${controller.getSavedRoutes!.data!.results![0]!.time} mins',
                                 style:
                                     TextStyleUtil.poppins400(fontSize: 14.kh),
                               ),

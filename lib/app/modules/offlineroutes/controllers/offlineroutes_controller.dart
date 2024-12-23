@@ -10,6 +10,7 @@ import '../../../customwidgets/globalcontroller.dart';
 import '../../../models/offlineroutes.dart';
 import '../../../models/polylinestrack.dart';
 import '../../../routes/app_pages.dart';
+import '../../../services/dio/api_service.dart';
 import '../../../services/storage.dart';
 
 class OfflineroutesController extends GetxController {
@@ -26,15 +27,25 @@ class OfflineroutesController extends GetxController {
 
   @override
   void onInit() {
-    _loadOfflineRoutes();
+    loadOfflineRoutes();
   }
 
-  void _loadOfflineRoutes() {
+  Future<void> fetchSavedRoutes() async {
+    APIManager.getFetchSavedRoutes(type: 'OFFLINE').then((response) {
+      final fetchedRoutes = OfflineRoutesData.fromJson(response.data);
+      getsavedOfflineRoutes.value = fetchedRoutes;
+      print("Saved routes offline: ${fetchedRoutes}");
+      // Save fetched routes locally
+      //   _saveRoutesOffline(fetchedRoutes);
+    });
+  }
+
+  void loadOfflineRoutes() {
     final routesJson = GetStorageService.appstorage.read('offlineRoutes');
     if (routesJson != null) {
       getsavedOfflineRoutes.value =
           OfflineRoutesData.fromJson(jsonDecode(routesJson));
-      print('Loaded offline routes: ${getsavedOfflineRoutes.value!.results}');
+      print('Loaded offline routes: ${getsavedOfflineRoutes.value}');
     }
   }
 
@@ -82,7 +93,7 @@ class OfflineroutesController extends GetxController {
       ));
     }
     Get.toNamed(Routes.SAVEDREALTIMENAVIGATION, arguments: {
-      'getSavedRoutes': getsavedOfflineRoutes,
+      'getSavedRoutes': getsavedOfflineRoutes.value,
       'polylines': polylineCoordinates
     });
   }

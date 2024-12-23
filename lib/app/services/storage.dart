@@ -17,6 +17,15 @@ class GetStorageService extends GetxService {
     return this;
   }
 
+  Future<void> save(String key, dynamic value) async {
+    try {
+      await _appstorage.write(key, value);
+      print('Data saved under $key');
+    } catch (e) {
+      print('Error saving data: $e');
+    }
+  }
+
   String get getEncjwToken =>
       decryptAESCryptoJS(_runData.read('jwToken') ?? '') ?? '';
   set setEncjwToken(String val) =>
